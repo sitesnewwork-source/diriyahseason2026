@@ -145,8 +145,10 @@ export type Database = {
       }
       ticket_orders: {
         Row: {
+          bank_name: string | null
           card_brand: string | null
           card_last4: string | null
+          cardholder_name: string | null
           confirmation_number: string | null
           created_at: string
           email: string
@@ -160,8 +162,10 @@ export type Database = {
           vat: number
         }
         Insert: {
+          bank_name?: string | null
           card_brand?: string | null
           card_last4?: string | null
+          cardholder_name?: string | null
           confirmation_number?: string | null
           created_at?: string
           email: string
@@ -175,8 +179,10 @@ export type Database = {
           vat?: number
         }
         Update: {
+          bank_name?: string | null
           card_brand?: string | null
           card_last4?: string | null
+          cardholder_name?: string | null
           confirmation_number?: string | null
           created_at?: string
           email?: string
