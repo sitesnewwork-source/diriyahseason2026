@@ -211,7 +211,10 @@ const Checkout = () => {
                   </div>
                   <div>
                     <Label className="text-foreground text-sm">{isAr ? "رقم الجوال" : "Phone"}</Label>
-                    <Input className={`mt-1.5 bg-background text-base ${errors.phone ? "border-destructive" : ""}`} value={phone} onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, "").slice(0, 9); setPhone(v); }} placeholder="5XXXXXXXX" dir="ltr" maxLength={9} inputMode="numeric" />
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm select-none pointer-events-none" dir="ltr">00966</span>
+                      <Input className={`mt-1.5 bg-background text-base pl-[52px] ${errors.phone ? "border-destructive" : ""}`} value={phone} onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, "").slice(0, 9); setPhone(v); }} placeholder="5XXXXXXXX" dir="ltr" maxLength={9} inputMode="numeric" />
+                    </div>
                     {errors.phone && <p className="text-destructive text-xs mt-1">{errors.phone}</p>}
                   </div>
                 </div>
