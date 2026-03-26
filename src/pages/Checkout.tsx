@@ -129,7 +129,7 @@ const Checkout = () => {
             {isAr ? "راجع طلبك وأكمل عملية الدفع" : "Review your order and complete payment"}
           </p>
 
-          <div className="grid md:grid-cols-5 gap-8">
+          <div className="grid md:grid-cols-5 gap-5 sm:gap-8">
             {/* Order Summary - Right/Left */}
             <div className="md:col-span-3 space-y-6">
               {/* Tickets */}
