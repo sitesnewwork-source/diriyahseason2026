@@ -119,24 +119,24 @@ const Checkout = () => {
     <div className="min-h-screen bg-background font-body" dir={isAr ? "rtl" : "ltr"}>
       <Header />
 
-      <main className="pt-28 pb-20 px-4">
+      <main className="pt-20 sm:pt-28 pb-12 sm:pb-20 px-3 sm:px-4">
         <div className="max-w-4xl mx-auto">
           <BackButton />
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-1 sm:mb-2">
             {isAr ? "إتمام الطلب" : "Checkout"}
           </h1>
-          <p className="text-muted-foreground mb-8">
+          <p className="text-sm sm:text-base text-muted-foreground mb-5 sm:mb-8">
             {isAr ? "راجع طلبك وأكمل عملية الدفع" : "Review your order and complete payment"}
           </p>
 
-          <div className="grid md:grid-cols-5 gap-8">
+          <div className="grid md:grid-cols-5 gap-5 sm:gap-8">
             {/* Order Summary - Right/Left */}
             <div className="md:col-span-3 space-y-6">
               {/* Tickets */}
-              <div className="bg-card rounded-xl border border-border p-5">
-                <div className="flex items-center gap-2 mb-4">
+              <div className="bg-card rounded-xl border border-border p-3 sm:p-5">
+                <div className="flex items-center gap-2 mb-3 sm:mb-4">
                   <Ticket className="w-5 h-5 text-primary" />
-                  <h2 className="font-display text-lg font-semibold text-foreground">
+                  <h2 className="font-display text-base sm:text-lg font-semibold text-foreground">
                     {isAr ? "التذاكر" : "Tickets"}
                   </h2>
                 </div>
@@ -146,33 +146,39 @@ const Checkout = () => {
                     {isAr ? "لا توجد تذاكر في السلة" : "No tickets in cart"}
                   </p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {tickets.map((ticket) => (
-                      <div key={ticket.id} className="flex items-center justify-between gap-4 p-3 rounded-lg bg-background">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-foreground text-sm truncate">{ticket.name}</p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                            <MapPin className="w-3 h-3" />
-                            <span>{isAr ? "الدرعية" : "Diriyah"}</span>
-                            <Calendar className="w-3 h-3 ms-2" />
-                            <span>2026-04-15</span>
+                      <div key={ticket.id} className="p-2.5 sm:p-3 rounded-lg bg-background">
+                        {/* Top row: name + delete */}
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-foreground text-sm leading-tight">{ticket.name}</p>
+                            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground mt-1">
+                              <MapPin className="w-3 h-3 flex-shrink-0" />
+                              <span>{isAr ? "الدرعية" : "Diriyah"}</span>
+                              <Calendar className="w-3 h-3 ms-1 flex-shrink-0" />
+                              <span>2026-04-15</span>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => updateQty(ticket.id, -1)} className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors">
-                            <Minus className="w-3 h-3" />
-                          </button>
-                          <span className="w-6 text-center text-sm font-semibold text-foreground">{ticket.qty}</span>
-                          <button onClick={() => updateQty(ticket.id, 1)} className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors">
-                            <Plus className="w-3 h-3" />
+                          <button onClick={() => removeTicket(ticket.id)} className="text-destructive/60 hover:text-destructive transition-colors p-1 flex-shrink-0">
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                        <p className="text-sm font-bold text-foreground w-20 text-end">
-                          {ticket.price * ticket.qty} {isAr ? "ر.س" : "SAR"}
-                        </p>
-                        <button onClick={() => removeTicket(ticket.id)} className="text-destructive/60 hover:text-destructive transition-colors">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {/* Bottom row: qty controls + price */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => updateQty(ticket.id, -1)} className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors">
+                              <Minus className="w-3 h-3" />
+                            </button>
+                            <span className="w-6 text-center text-sm font-semibold text-foreground">{ticket.qty}</span>
+                            <button onClick={() => updateQty(ticket.id, 1)} className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors">
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <p className="text-sm font-bold text-foreground">
+                            {ticket.price * ticket.qty} {isAr ? "ر.س" : "SAR"}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -180,11 +186,11 @@ const Checkout = () => {
               </div>
 
               {/* Contact Info */}
-              <div className="bg-card rounded-xl border border-border p-5">
-                <h2 className="font-display text-lg font-semibold text-foreground mb-4">
+              <div className="bg-card rounded-xl border border-border p-3 sm:p-5">
+                <h2 className="font-display text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">
                   {isAr ? "معلومات التواصل" : "Contact Information"}
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <Label className="text-foreground text-sm">{isAr ? "الاسم الأول" : "First Name"}</Label>
                     <Input className={`mt-1.5 bg-background text-base ${errors.firstName ? "border-destructive" : ""}`} value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={isAr ? "محمد" : "Mohammed"} maxLength={50} />
@@ -196,25 +202,25 @@ const Checkout = () => {
                     {errors.lastName && <p className="text-destructive text-xs mt-1">{errors.lastName}</p>}
                   </div>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
                   <div>
                     <Label className="text-foreground text-sm">{isAr ? "البريد الإلكتروني" : "Email"}</Label>
-                    <Input className={`mt-1.5 bg-background ${errors.email ? "border-destructive" : ""}`} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" dir="ltr" maxLength={255} />
+                    <Input className={`mt-1.5 bg-background text-base ${errors.email ? "border-destructive" : ""}`} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" dir="ltr" maxLength={255} />
                     {errors.email && <p className="text-destructive text-xs mt-1">{errors.email}</p>}
                   </div>
                   <div>
                     <Label className="text-foreground text-sm">{isAr ? "رقم الجوال" : "Phone"}</Label>
-                    <Input className={`mt-1.5 bg-background ${errors.phone ? "border-destructive" : ""}`} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+966 5XX XXX XXXX" dir="ltr" maxLength={20} />
+                    <Input className={`mt-1.5 bg-background text-base ${errors.phone ? "border-destructive" : ""}`} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+966 5XX XXX XXXX" dir="ltr" maxLength={20} />
                     {errors.phone && <p className="text-destructive text-xs mt-1">{errors.phone}</p>}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Price Summary - Sticky */}
+            {/* Price Summary */}
             <div className="md:col-span-2">
-              <div className="bg-card rounded-xl border border-border p-5 md:sticky md:top-28">
-                <h2 className="font-display text-lg font-semibold text-foreground mb-4">
+              <div className="bg-card rounded-xl border border-border p-3 sm:p-5 md:sticky md:top-28">
+                <h2 className="font-display text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">
                   {isAr ? "ملخص الطلب" : "Order Summary"}
                 </h2>
 
