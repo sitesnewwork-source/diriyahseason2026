@@ -65,15 +65,20 @@ const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      <div className="h-1 bg-accent" />
+      {/* Gold accent top bar */}
+      <div className="h-[2px] bg-gradient-gold" />
 
       <nav
         className={`transition-all duration-500 ${
           scrolled || isOpen
-            ? "bg-background shadow-sm"
+            ? "bg-background/95 backdrop-blur-md shadow-[0_2px_20px_-4px_hsl(var(--gold)/0.15)]"
             : "bg-background"
         }`}
       >
+        {/* Bottom gold animated line */}
+        <div className={`absolute bottom-0 left-0 right-0 h-px transition-opacity duration-500 ${scrolled ? "opacity-100" : "opacity-0"}`}>
+          <div className="w-full h-full bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+        </div>
         <div className="container mx-auto px-4 sm:px-6 flex items-center justify-between h-14 sm:h-16 md:h-[72px]">
           {/* Left side */}
           <div className="flex items-center gap-1 sm:gap-3">
@@ -133,7 +138,7 @@ const Header = () => {
                     <ChevronDown className={`w-3.5 h-3.5 opacity-60 transition-transform ${placesOpen ? "rotate-180" : ""}`} />
                   )}
                   <span>{link.label}</span>
-                  <span className="absolute -bottom-1 right-0 w-0 h-[1.5px] bg-foreground transition-all duration-300 group-hover:w-full" />
+                  <span className="absolute -bottom-1 right-0 w-0 h-[1.5px] bg-gradient-to-r from-gold to-gold-light transition-all duration-300 group-hover:w-full" />
                 </button>
                 {link.hasDropdown && (
                   <AnimatePresence>
@@ -172,11 +177,11 @@ const Header = () => {
           </ul>
 
           {/* Right side: Logo */}
-          <Link to="/" className={`flex flex-col ${isRtl ? "items-end" : "items-start"}`}>
-            <span className="font-display text-xl sm:text-2xl md:text-[28px] font-bold text-accent leading-none tracking-tight">
+          <Link to="/" className={`flex flex-col ${isRtl ? "items-end" : "items-start"} group`}>
+            <span className="font-display text-xl sm:text-2xl md:text-[28px] font-bold leading-none tracking-tight text-shimmer-gold">
               {t("nav.logo")}
             </span>
-            <span className="text-[9px] sm:text-[10px] text-foreground/40 mt-0.5 tracking-wider">
+            <span className="text-[9px] sm:text-[10px] text-gold/40 mt-0.5 tracking-wider group-hover:text-gold/70 transition-colors">
               {t("nav.tagline")}
             </span>
           </Link>
