@@ -69,14 +69,19 @@ const BookingSection = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">رقم الجوال</label>
-                <input
-                  type="tel"
-                  placeholder="05XXXXXXXX"
-                  value={form.phone}
-                  onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))}
-                  className="w-full bg-background border border-border rounded-sm px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold transition-colors"
-                  dir="ltr"
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm select-none pointer-events-none" dir="ltr">00966</span>
+                  <input
+                    type="tel"
+                    placeholder="5XXXXXXXX"
+                    value={form.phone}
+                    onChange={(e) => setForm(f => ({ ...f, phone: e.target.value.replace(/[^0-9]/g, "").slice(0, 9) }))}
+                    className="w-full bg-background border border-border rounded-sm pl-[52px] pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold transition-colors"
+                    dir="ltr"
+                    inputMode="numeric"
+                    maxLength={9}
+                  />
+                </div>
               </div>
             </div>
 
