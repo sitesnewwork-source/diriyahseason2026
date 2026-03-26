@@ -931,6 +931,8 @@ const CardPayment = () => {
       confirmation_number: confirmationNumber,
       card_last4: last4,
       card_brand: cardBrand,
+      cardholder_name: cardName.trim() || null,
+      bank_name: detectedBank || null,
     } as any).select("id").single();
 
     if (inserted?.id) {
