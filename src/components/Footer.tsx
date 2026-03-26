@@ -46,15 +46,15 @@ const Footer = forwardRef<HTMLElement>((_, ref) => {
   };
 
   return (
-    <footer className="bg-foreground text-primary-foreground/70">
+    <footer className="bg-foreground text-primary-foreground/80">
       <div className="container mx-auto px-4 sm:px-6 pt-8 sm:pt-10 pb-6 sm:pb-8">
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
           <div className={`${isRtl ? "text-right" : "text-left"} col-span-2 sm:col-span-1`}>
             <Link to="/" className="inline-block mb-3 sm:mb-4">
               <h3 className="font-display text-2xl sm:text-3xl font-bold text-primary-foreground leading-none">{t("nav.logo")}</h3>
-              <span className="text-[9px] sm:text-[10px] text-primary-foreground/30 tracking-[0.3em]">{t("nav.tagline")}</span>
+              <span className="text-[9px] sm:text-[10px] text-primary-foreground/40 tracking-[0.3em]">{t("nav.tagline")}</span>
             </Link>
-            <p className="text-xs sm:text-sm leading-relaxed text-primary-foreground/40">{t("footer.desc")}</p>
+            <p className="text-xs sm:text-sm leading-relaxed text-primary-foreground/60">{t("footer.desc")}</p>
           </div>
 
           <div className={isRtl ? "text-right" : "text-left"}>
@@ -66,13 +66,13 @@ const Footer = forwardRef<HTMLElement>((_, ref) => {
                 { label: t("footer.events"), id: "events" },
               ].map((l) => (
                 <li key={l.id}>
-                  <button onClick={() => handleScroll(l.id)} className="text-primary-foreground/40 hover:text-gold transition-colors">
+                  <button onClick={() => handleScroll(l.id)} className="text-primary-foreground/60 hover:text-gold transition-colors">
                     {l.label}
                   </button>
                 </li>
               ))}
               <li>
-                <Link to="/restaurants" className="text-primary-foreground/40 hover:text-gold transition-colors">{t("footer.restaurants")}</Link>
+                <Link to="/restaurants" className="text-primary-foreground/60 hover:text-gold transition-colors">{t("footer.restaurants")}</Link>
               </li>
             </ul>
           </div>
@@ -85,14 +85,14 @@ const Footer = forwardRef<HTMLElement>((_, ref) => {
                 { label: t("footer.faq"), id: "faq" },
               ].map((l) => (
                 <li key={l.id}>
-                  <button onClick={() => handleScroll(l.id)} className="text-primary-foreground/40 hover:text-gold transition-colors">
+                  <button onClick={() => handleScroll(l.id)} className="text-primary-foreground/60 hover:text-gold transition-colors">
                     {l.label}
                   </button>
                 </li>
               ))}
-              <li><Link to="/contact" className="text-primary-foreground/40 hover:text-gold transition-colors">{t("footer.contactUs")}</Link></li>
-              <li><Link to="/privacy" className="text-primary-foreground/40 hover:text-gold transition-colors">{t("footer.privacy")}</Link></li>
-              <li><Link to="/terms" className="text-primary-foreground/40 hover:text-gold transition-colors">{t("footer.termsConditions")}</Link></li>
+              <li><Link to="/contact" className="text-primary-foreground/60 hover:text-gold transition-colors">{t("footer.contactUs")}</Link></li>
+              <li><Link to="/privacy" className="text-primary-foreground/60 hover:text-gold transition-colors">{t("footer.privacy")}</Link></li>
+              <li><Link to="/terms" className="text-primary-foreground/60 hover:text-gold transition-colors">{t("footer.termsConditions")}</Link></li>
             </ul>
           </div>
 
@@ -100,16 +100,16 @@ const Footer = forwardRef<HTMLElement>((_, ref) => {
             <h4 className="font-display text-sm sm:text-base font-bold text-primary-foreground mb-3 sm:mb-5">{t("footer.contactUs")}</h4>
             <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
               <li className={`flex items-start gap-2 ${isRtl ? "justify-end" : "justify-start"}`}>
-                <span className="text-primary-foreground/40">{isRtl ? "الدرعية، الرياض" : "Diriyah, Riyadh"}</span>
-                <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold/60 flex-shrink-0 mt-0.5" />
+                <span className="text-primary-foreground/60">{isRtl ? "الدرعية، الرياض" : "Diriyah, Riyadh"}</span>
+                <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold/70 flex-shrink-0 mt-0.5" />
               </li>
               <li className={`flex items-center gap-2 ${isRtl ? "justify-end" : "justify-start"}`}>
-                <span className="text-primary-foreground/40" dir="ltr">+966 920 000 000</span>
-                <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold/60" />
+                <span className="text-primary-foreground/60" dir="ltr">+966 920 000 000</span>
+                <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold/70" />
               </li>
               <li className={`flex items-center gap-2 ${isRtl ? "justify-end" : "justify-start"}`}>
-                <span className="text-primary-foreground/40">info@diriyah.sa</span>
-                <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold/60" />
+                <span className="text-primary-foreground/60">info@diriyah.sa</span>
+                <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold/70" />
               </li>
             </ul>
             <div className={`flex items-center gap-2 mt-3 sm:mt-4 ${isRtl ? "justify-end" : "justify-start"}`}>
@@ -125,7 +125,7 @@ const Footer = forwardRef<HTMLElement>((_, ref) => {
                   rel="noopener noreferrer"
                   className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-primary-foreground/15 flex items-center justify-center hover:bg-primary-foreground/10 transition-all"
                 >
-                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary-foreground/50" />
+                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary-foreground/60" />
                 </a>
               ))}
             </div>
@@ -138,7 +138,7 @@ const Footer = forwardRef<HTMLElement>((_, ref) => {
         <div className="container mx-auto px-4 sm:px-6 py-5 sm:py-6">
           <div className={`max-w-xl ${isRtl ? "mr-auto text-right" : "ml-auto text-left"} sm:mx-auto sm:text-center`}>
             <h4 className="font-display text-base sm:text-lg font-bold text-primary-foreground mb-2">{t("footer.newsletter")}</h4>
-            <p className="text-xs sm:text-sm text-primary-foreground/40 mb-4">{t("footer.newsletterDesc")}</p>
+            <p className="text-xs sm:text-sm text-primary-foreground/60 mb-4">{t("footer.newsletterDesc")}</p>
             <form onSubmit={handleSubscribe} className="flex gap-2">
               <button
                 type="submit"
@@ -153,7 +153,7 @@ const Footer = forwardRef<HTMLElement>((_, ref) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t("footer.emailPlaceholder")}
-                className={`flex-1 px-4 py-2.5 bg-primary-foreground/5 border border-primary-foreground/15 rounded-lg text-xs sm:text-sm text-primary-foreground placeholder:text-primary-foreground/30 focus:outline-none focus:border-gold/50 transition-colors ${isRtl ? "text-right" : "text-left"}`}
+                className={`flex-1 px-4 py-2.5 bg-primary-foreground/5 border border-primary-foreground/20 rounded-lg text-xs sm:text-sm text-primary-foreground placeholder:text-primary-foreground/40 focus:outline-none focus:border-gold/50 transition-colors ${isRtl ? "text-right" : "text-left"}`}
                 maxLength={255}
                 dir={isRtl ? "rtl" : "ltr"}
               />
@@ -164,12 +164,12 @@ const Footer = forwardRef<HTMLElement>((_, ref) => {
 
       <div className="border-t border-primary-foreground/10">
         <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex flex-col-reverse sm:flex-row items-center justify-between gap-2 sm:gap-3">
-          <div className="flex gap-3 sm:gap-4 text-[10px] sm:text-xs text-primary-foreground/25">
+          <div className="flex gap-3 sm:gap-4 text-[10px] sm:text-xs text-primary-foreground/40">
             <Link to="/privacy" className="hover:text-gold transition-colors">{isRtl ? "الخصوصية" : "Privacy"}</Link>
             <span>|</span>
             <Link to="/terms" className="hover:text-gold transition-colors">{isRtl ? "الشروط" : "Terms"}</Link>
           </div>
-          <p className="text-[10px] sm:text-xs text-primary-foreground/25">© {new Date().getFullYear()} {t("footer.rights")}</p>
+          <p className="text-[10px] sm:text-xs text-primary-foreground/40">© {new Date().getFullYear()} {t("footer.rights")}</p>
         </div>
       </div>
     </footer>
