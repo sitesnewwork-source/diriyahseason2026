@@ -6,11 +6,12 @@ import { playChime } from "@/hooks/use-action-sound";
 import { sendBrowserNotification, requestNotificationPermission } from "@/hooks/use-browser-notifications";
 import { RealtimePostgresInsertPayload } from "@supabase/supabase-js";
 
-type TableName = "contact_messages" | "restaurant_bookings" | "ticket_orders" | "visitors";
+type TableName = "contact_messages" | "restaurant_bookings" | "ticket_orders" | "visitors" | "event_bookings";
 
 const tableLabels: Record<TableName, { title: string; icon: string }> = {
   contact_messages: { title: "📩 رسالة تواصل جديدة", icon: "📩" },
   restaurant_bookings: { title: "🍽️ حجز مطعم جديد", icon: "🍽️" },
+  event_bookings: { title: "🎉 حجز فعالية جديد", icon: "🎉" },
   ticket_orders: { title: "🎟️ طلب تذاكر جديد", icon: "🎟️" },
   visitors: { title: "👤 زائر جديد دخل الموقع", icon: "👤" },
 };
@@ -21,6 +22,8 @@ function getDescription(table: TableName, payload: any): string {
       return `${payload.name} — ${payload.subject || "رسالة جديدة"}`;
     case "restaurant_bookings":
       return `${payload.name} — ${payload.restaurant} (${payload.guests} أشخاص)`;
+    case "event_bookings":
+      return `${payload.name} — ${payload.event_title} (${payload.guests} أشخاص)`;
     case "ticket_orders":
       return `${payload.email} — ${payload.total} ر.س`;
     case "visitors":
@@ -57,6 +60,13 @@ export function useRealtimeNotifications() {
       )
       .on(
         "postgres_changes" as any,
+        { event: "INSERT", schema: "public", table: "event_bookings" },
+        (payload: RealtimePostgresInsertPayload<any>) => {
+          notify("event_bookings", payload.new);
+        }
+      )
+      .on(
+        "postgres_changes" as any,
         { event: "INSERT", schema: "public", table: "ticket_orders" },
         (payload: RealtimePostgresInsertPayload<any>) => {
           notify("ticket_orders", payload.new);
@@ -74,10 +84,10 @@ export function useRealtimeNotifications() {
     function notify(table: TableName, data: any) {
       const info = tableLabels[table];
       const description = getDescription(table, data);
-      const needsApproval = (table === "ticket_orders" || table === "restaurant_bookings") && data.status === "pending";
+      const needsApproval = (table === "ticket_orders" || table === "restaurant_bookings" || table === "event_bookings") && data.status === "pending";
       
-      // Play distinct sound per type
       const soundType = table === "contact_messages" ? "message"
+        : table === "event_bookings" ? "notification"
         : needsApproval ? "urgent" : "notification";
       playChime(soundType);
       
