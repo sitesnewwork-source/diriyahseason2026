@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Bell, X, User, MessageSquare, UtensilsCrossed, Ticket, Trash2, CheckCircle2, Clock } from "lucide-react";
+import { Bell, X, User, MessageSquare, UtensilsCrossed, Ticket, Trash2, CheckCircle2, Clock, CalendarCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { playChime } from "@/hooks/use-action-sound";
@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export interface Notification {
   id: string;
-  type: "visitors" | "contact_messages" | "restaurant_bookings" | "ticket_orders";
+  type: "visitors" | "contact_messages" | "restaurant_bookings" | "ticket_orders" | "event_bookings";
   title: string;
   description: string;
   icon: string;
@@ -22,6 +22,7 @@ const typeIcons: Record<string, typeof User> = {
   visitors: User,
   contact_messages: MessageSquare,
   restaurant_bookings: UtensilsCrossed,
+  event_bookings: CalendarCheck,
   ticket_orders: Ticket,
 };
 
@@ -29,6 +30,7 @@ const typeColors: Record<string, string> = {
   visitors: "bg-emerald-50 text-emerald-600",
   contact_messages: "bg-blue-50 text-blue-600",
   restaurant_bookings: "bg-amber-50 text-amber-600",
+  event_bookings: "bg-pink-50 text-pink-600",
   ticket_orders: "bg-purple-50 text-purple-600",
 };
 
