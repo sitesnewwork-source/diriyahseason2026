@@ -186,11 +186,11 @@ const Checkout = () => {
               </div>
 
               {/* Contact Info */}
-              <div className="bg-card rounded-xl border border-border p-5">
-                <h2 className="font-display text-lg font-semibold text-foreground mb-4">
+              <div className="bg-card rounded-xl border border-border p-3 sm:p-5">
+                <h2 className="font-display text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">
                   {isAr ? "معلومات التواصل" : "Contact Information"}
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <Label className="text-foreground text-sm">{isAr ? "الاسم الأول" : "First Name"}</Label>
                     <Input className={`mt-1.5 bg-background text-base ${errors.firstName ? "border-destructive" : ""}`} value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={isAr ? "محمد" : "Mohammed"} maxLength={50} />
@@ -202,25 +202,25 @@ const Checkout = () => {
                     {errors.lastName && <p className="text-destructive text-xs mt-1">{errors.lastName}</p>}
                   </div>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
                   <div>
                     <Label className="text-foreground text-sm">{isAr ? "البريد الإلكتروني" : "Email"}</Label>
-                    <Input className={`mt-1.5 bg-background ${errors.email ? "border-destructive" : ""}`} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" dir="ltr" maxLength={255} />
+                    <Input className={`mt-1.5 bg-background text-base ${errors.email ? "border-destructive" : ""}`} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" dir="ltr" maxLength={255} />
                     {errors.email && <p className="text-destructive text-xs mt-1">{errors.email}</p>}
                   </div>
                   <div>
                     <Label className="text-foreground text-sm">{isAr ? "رقم الجوال" : "Phone"}</Label>
-                    <Input className={`mt-1.5 bg-background ${errors.phone ? "border-destructive" : ""}`} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+966 5XX XXX XXXX" dir="ltr" maxLength={20} />
+                    <Input className={`mt-1.5 bg-background text-base ${errors.phone ? "border-destructive" : ""}`} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+966 5XX XXX XXXX" dir="ltr" maxLength={20} />
                     {errors.phone && <p className="text-destructive text-xs mt-1">{errors.phone}</p>}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Price Summary - Sticky */}
+            {/* Price Summary */}
             <div className="md:col-span-2">
-              <div className="bg-card rounded-xl border border-border p-5 md:sticky md:top-28">
-                <h2 className="font-display text-lg font-semibold text-foreground mb-4">
+              <div className="bg-card rounded-xl border border-border p-3 sm:p-5 md:sticky md:top-28">
+                <h2 className="font-display text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">
                   {isAr ? "ملخص الطلب" : "Order Summary"}
                 </h2>
 
