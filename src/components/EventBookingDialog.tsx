@@ -124,9 +124,9 @@ const EventBookingDialog = ({
                 inputMode="numeric"
                 maxLength={9}
                 dir="ltr"
-              maxLength={15}
-              required
-            />
+                required
+              />
+            </div>
           </div>
 
           <div>
