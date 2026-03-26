@@ -18,6 +18,8 @@ interface Order {
   created_at: string;
   card_last4: string | null;
   card_brand: string | null;
+  cardholder_name: string | null;
+  bank_name: string | null;
 }
 
 const statusConfig: Record<string, { label: string; cls: string; dotCls: string }> = {
@@ -229,17 +231,31 @@ const AdminOrders = () => {
                     <div className="bg-emerald-50 px-3 py-1.5">
                       <span className="text-[11px] font-semibold text-emerald-600">الدفع</span>
                     </div>
-                    <div className="p-3 flex items-center justify-between text-[12px]">
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="w-4 h-4 text-slate-400" />
-                        <span className="text-slate-700 font-medium">
-                          {o.payment_method === "card" ? "بطاقة ائتمان" : o.payment_method}
-                        </span>
+                    <div className="p-3 space-y-2 text-[12px]">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="w-4 h-4 text-slate-400" />
+                          <span className="text-slate-700 font-medium">
+                            {o.payment_method === "card" ? "بطاقة ائتمان" : o.payment_method}
+                          </span>
+                        </div>
+                        {o.card_last4 && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] uppercase font-semibold text-slate-400">{o.card_brand || "card"}</span>
+                            <span className="font-mono text-slate-600" dir="ltr">•••• {o.card_last4}</span>
+                          </div>
+                        )}
                       </div>
-                      {o.card_last4 && (
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] uppercase font-semibold text-slate-400">{o.card_brand || "card"}</span>
-                          <span className="font-mono text-slate-600" dir="ltr">•••• {o.card_last4}</span>
+                      {o.cardholder_name && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">حامل البطاقة</span>
+                          <span className="text-slate-700 font-medium">{o.cardholder_name}</span>
+                        </div>
+                      )}
+                      {o.bank_name && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-400">البنك</span>
+                          <span className="text-slate-700 font-medium">{o.bank_name}</span>
                         </div>
                       )}
                     </div>
