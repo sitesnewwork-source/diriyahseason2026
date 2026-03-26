@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, MessageSquare, UtensilsCrossed, Ticket, LogOut, Menu, X, Home, Bell, User, Settings, Users } from "lucide-react";
+import { LayoutDashboard, MessageSquare, UtensilsCrossed, Ticket, LogOut, Menu, X, Home, Bell, User, Settings, Users, CalendarCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdminLogin from "./AdminLogin";
 import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
@@ -15,6 +15,7 @@ const navItems = [
   { label: "الزوار", icon: Users, path: "/admin/visitors" },
   { label: "رسائل التواصل", icon: MessageSquare, path: "/admin/messages" },
   { label: "حجوزات المطاعم", icon: UtensilsCrossed, path: "/admin/bookings" },
+  { label: "حجوزات الفعاليات", icon: CalendarCheck, path: "/admin/event-bookings" },
   { label: "طلبات التذاكر", icon: Ticket, path: "/admin/orders" },
   { label: "الإعدادات", icon: Settings, path: "/admin/settings" },
 ];
