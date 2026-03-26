@@ -61,7 +61,7 @@ const ExperienceDetail = () => {
           <div className="container mx-auto px-4 sm:px-6 pb-6 sm:pb-10">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
               <span className="inline-block bg-gold/20 text-gold text-xs sm:text-sm px-3 py-1 rounded-sm mb-3 backdrop-blur-sm">{t(exp.category, exp.categoryEn)}</span>
-              <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold text-cream mb-2">{t(exp.title, exp.titleEn)}</h1>
+              <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-bold text-cream mb-2 text-shimmer-gold">{t(exp.title, exp.titleEn)}</h1>
               <p className="text-cream/70 text-sm sm:text-base">{t(exp.schedule, exp.scheduleEn)}</p>
             </motion.div>
           </div>
@@ -130,14 +130,14 @@ const ExperienceDetail = () => {
                 <div className="flex items-start gap-3"><Clock className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" /><div><p className="text-xs text-muted-foreground mb-0.5">{isAr ? "الجدول" : "Schedule"}</p><p className="text-sm font-medium text-foreground">{t(exp.schedule, exp.scheduleEn)}</p></div></div>
               </div>
               <div className="h-px bg-border" />
-              <Link to="/tickets" className="block w-full bg-accent text-accent-foreground font-bold py-3.5 rounded-lg hover:bg-accent/90 transition-colors text-sm text-center">{isAr ? "احجز تذكرتك" : "Book Your Ticket"}</Link>
+              <Link to="/tickets" className="block w-full bg-accent text-accent-foreground font-bold py-3.5 rounded-lg hover:bg-accent/90 transition-colors text-sm text-center btn-press glow-gold-hover">{isAr ? "احجز تذكرتك" : "Book Your Ticket"}</Link>
               <p className="text-[10px] text-muted-foreground text-center">{isAr ? "التذكرة تشمل الدخول لجميع المعارض والتجارب" : "Ticket includes access to all exhibitions and experiences"}</p>
             </motion.div>
           </div>
         </div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mt-12 sm:mt-20">
-          <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-6 sm:mb-8">{isAr ? "تجارب أخرى قد تعجبك" : "Other Experiences You May Like"}</h2>
+          <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-6 sm:mb-8 gold-sparkle">{isAr ? "تجارب أخرى قد تعجبك" : "Other Experiences You May Like"}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {otherExperiences.map((other) => (
               <Link key={other.id} to={`/experience/${other.id}`} className="group">

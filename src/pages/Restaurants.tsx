@@ -80,7 +80,7 @@ const Restaurants = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="font-display text-4xl md:text-6xl lg:text-[72px] font-bold text-background mb-4 leading-[1.15]"
+            className="font-display text-4xl md:text-6xl lg:text-[72px] font-bold text-background mb-4 leading-[1.15] text-shimmer-gold"
           >
             {t("restaurants.heroTitle")}
           </motion.h1>
@@ -196,7 +196,7 @@ const Restaurants = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="font-display text-2xl md:text-4xl font-bold text-foreground mb-6"
+            className="font-display text-2xl md:text-4xl font-bold text-foreground mb-6 gold-sparkle"
           >
             {t("restaurants.sectionTitle")}
           </motion.h2>
@@ -279,9 +279,9 @@ const Restaurants = () => {
                         {restaurant.name}
                       </h3>
                       <div className="flex items-center gap-3 justify-end flex-wrap">
-                        <Link
+                <Link
                           to={`/tickets?restaurant=${encodeURIComponent(restaurant.name)}`}
-                          className="inline-flex items-center justify-center px-6 py-2.5 bg-accent text-accent-foreground text-sm font-medium rounded-lg hover:bg-accent/90 transition-colors"
+                          className="inline-flex items-center justify-center px-6 py-2.5 bg-accent text-accent-foreground text-sm font-medium rounded-lg hover:bg-accent/90 transition-colors btn-press glow-gold-hover"
                         >
                           {t("restaurants.bookNow")}
                         </Link>
@@ -305,7 +305,7 @@ const Restaurants = () => {
             <div className="text-center mt-12">
               <button
                 onClick={() => setVisibleCount((prev) => prev + 6)}
-                className="px-8 py-3 border-2 border-foreground/20 text-foreground rounded-full text-sm font-medium hover:border-foreground/40 hover:bg-foreground/5 transition-all"
+                className="px-8 py-3 border-2 border-gold/30 text-foreground rounded-full text-sm font-medium hover:border-gold/60 hover:bg-gold/5 transition-all btn-luxury btn-press"
               >
                 {t("restaurants.loadMore")}
               </button>
@@ -315,7 +315,7 @@ const Restaurants = () => {
       </section>
 
       {/* ===== HOURS SECTION ===== */}
-      <section className="py-8 md:py-12 bg-card border-t border-border">
+      <section className="py-8 md:py-12 bg-card border-t border-gold/20">
         <div className="container mx-auto px-6 md:px-12">
           <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground text-right mb-5">
             {t("restaurants.hours")}

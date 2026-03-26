@@ -71,7 +71,7 @@ const RestaurantDetail = () => {
               <span className="inline-block bg-primary/90 text-primary-foreground text-xs font-medium px-3 py-1.5 rounded-sm mb-4">
                 {restaurant.cuisine}
               </span>
-              <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight">
+              <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight text-shimmer-gold">
                 {restaurant.name}
               </h1>
               <p className="text-white/80 text-base md:text-lg mt-3 max-w-2xl leading-relaxed">
@@ -141,7 +141,7 @@ const RestaurantDetail = () => {
             >
               {/* About */}
               <div>
-                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-6 pb-4 border-b border-border">
+                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-6 pb-4 border-b border-gold/20 gold-sparkle">
                   عن المطعم
                 </h2>
                 <p className="text-muted-foreground leading-[1.9] text-base md:text-lg">
@@ -169,7 +169,7 @@ const RestaurantDetail = () => {
 
               {/* Menu Section inline */}
               <div>
-                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-8 pb-4 border-b border-border">
+                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-8 pb-4 border-b border-gold/20 gold-sparkle">
                   قائمة الطعام
                 </h2>
                 <div className="space-y-10">
@@ -327,7 +327,7 @@ const RestaurantDetail = () => {
       {/* Gallery Section */}
       <section className="bg-foreground dark:bg-card py-16 md:py-20">
         <div className="container mx-auto px-6">
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-background dark:text-foreground mb-10">
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-background dark:text-foreground mb-10 gold-sparkle">
             معرض الصور
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
