@@ -89,7 +89,7 @@ const HeroSection = () => {
             transition={{ duration: 0.7 }}
             className="max-w-3xl"
           >
-            <h1 className="font-display text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-cream leading-tight mb-3 sm:mb-4">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-cream leading-tight mb-3 sm:mb-4 text-shimmer-gold">
               {slides[current].title}
             </h1>
             <p className="text-cream/70 text-sm sm:text-base md:text-lg mb-6 sm:mb-8 max-w-2xl mx-auto px-2">
@@ -97,13 +97,18 @@ const HeroSection = () => {
             </p>
             <button
               onClick={() => { playChime("click"); handleCTA(slides[current].target); }}
-              className="inline-flex items-center gap-2 text-cream text-sm border-b border-cream/50 pb-1 hover:border-cream transition-all btn-press"
+              className="inline-flex items-center gap-2 text-cream text-sm border-b border-gold/50 pb-1 hover:border-gold transition-all btn-press btn-luxury glow-gold-hover px-4 py-2"
             >
               <span>{slides[current].cta}</span>
               <ArrowIcon className="w-4 h-4" />
             </button>
           </motion.div>
         </AnimatePresence>
+      </div>
+
+      {/* Gold animated line at bottom */}
+      <div className="absolute bottom-20 sm:bottom-24 left-1/2 -translate-x-1/2 w-32 sm:w-48 gold-line-animated z-20">
+        <div className="h-px" />
       </div>
 
       <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-20">
@@ -113,7 +118,7 @@ const HeroSection = () => {
             onClick={() => { playChime("soft"); setCurrent(i); }}
             className={`transition-all duration-300 rounded-full ${
               i === current
-                ? "w-3 h-3 border-2 border-cream bg-transparent"
+                ? "w-3 h-3 border-2 border-gold bg-transparent glow-gold"
                 : "w-2 h-2 bg-cream/40"
             }`}
           />

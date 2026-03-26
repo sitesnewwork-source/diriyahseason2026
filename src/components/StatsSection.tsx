@@ -43,12 +43,12 @@ const StatItem = ({ value, suffix, label, delay }: StatItemProps) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay, duration: 0.6 }}
-      className="text-center"
+      className="text-center group"
     >
-      <div className="font-display text-4xl sm:text-5xl md:text-6xl font-bold text-gold mb-2">
+      <div className="font-display text-4xl sm:text-5xl md:text-6xl font-bold text-shimmer-gold mb-2 gold-sparkle">
         {displayValue}{suffix}
       </div>
-      <div className="text-sm sm:text-base text-primary-foreground/60">{label}</div>
+      <div className="text-sm sm:text-base text-primary-foreground/60 group-hover:text-gold/70 transition-colors duration-300">{label}</div>
     </motion.div>
   );
 };
@@ -65,11 +65,18 @@ const StatsSection = () => {
 
   return (
     <section className="py-16 sm:py-20 md:py-24 bg-foreground relative overflow-hidden">
-      <div className="absolute inset-0 opacity-[0.03]">
-        <div className="absolute top-0 left-0 w-full h-full" style={{
-          backgroundImage: `repeating-linear-gradient(60deg, transparent, transparent 80px, hsl(var(--background)) 80px, hsl(var(--background)) 81px)`,
+      {/* Subtle gold pattern overlay */}
+      <div className="absolute inset-0 opacity-[0.04]">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `repeating-linear-gradient(60deg, transparent, transparent 80px, hsl(43 72% 50%) 80px, hsl(43 72% 50%) 81px)`,
         }} />
       </div>
+
+      {/* Gold corner accents */}
+      <div className="absolute top-6 left-6 w-12 h-12 border-t border-l border-gold/15" />
+      <div className="absolute top-6 right-6 w-12 h-12 border-t border-r border-gold/15" />
+      <div className="absolute bottom-6 left-6 w-12 h-12 border-b border-l border-gold/15" />
+      <div className="absolute bottom-6 right-6 w-12 h-12 border-b border-r border-gold/15" />
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
