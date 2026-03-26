@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Noto Naskh Arabic', 'serif'],
+        display: ['Amiri', 'Playfair Display', 'serif'],
         body: ['Tajawal', 'sans-serif'],
       },
       colors: {
