@@ -157,14 +157,19 @@ const ContactPage = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-1.5">{t("contact.phone")}</label>
-                      <input
-                        type="tel"
-                        value={form.phone}
-                        onChange={(e) => updateField("phone", e.target.value)}
-                        placeholder="+966 5X XXX XXXX"
-                        maxLength={20}
-                        className="w-full bg-background dark:bg-muted/50 border border-border rounded-lg px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/30 transition-colors"
-                      />
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm select-none pointer-events-none" dir="ltr">00966</span>
+                        <input
+                          type="tel"
+                          value={form.phone}
+                          onChange={(e) => updateField("phone", e.target.value.replace(/[^0-9]/g, "").slice(0, 9))}
+                          placeholder="5XXXXXXXX"
+                          maxLength={9}
+                          inputMode="numeric"
+                          dir="ltr"
+                          className="w-full bg-background dark:bg-muted/50 border border-border rounded-lg pl-[52px] pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/30 transition-colors"
+                        />
+                      </div>
                     </div>
 
                     <div>
