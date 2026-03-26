@@ -112,16 +112,21 @@ const EventBookingDialog = ({
             <label className="text-sm font-medium text-foreground mb-1.5 block">
               {isAr ? "رقم الجوال *" : "Phone Number *"}
             </label>
-            <Input
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              placeholder={isAr ? "05xxxxxxxx" : "05xxxxxxxx"}
-              className="text-base"
-              style={{ fontSize: "16px" }}
-              type="tel"
-              maxLength={15}
-              required
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm select-none pointer-events-none" dir="ltr">00966</span>
+              <Input
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/[^0-9]/g, "").slice(0, 9) })}
+                placeholder="5XXXXXXXX"
+                className="text-base pl-[52px]"
+                style={{ fontSize: "16px" }}
+                type="tel"
+                inputMode="numeric"
+                maxLength={9}
+                dir="ltr"
+                required
+              />
+            </div>
           </div>
 
           <div>
