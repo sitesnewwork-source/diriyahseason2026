@@ -67,8 +67,9 @@ const Checkout = () => {
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       e.email = isAr ? "أدخل بريد إلكتروني صحيح" : "Enter a valid email";
     }
-    if (!phone.trim() || phone.replace(/\D/g, "").length < 9) {
-      e.phone = isAr ? "أدخل رقم جوال صحيح" : "Enter a valid phone number";
+    const digits = phone.replace(/\D/g, "");
+    if (!digits || digits.length !== 9 || !digits.startsWith("5")) {
+      e.phone = isAr ? "أدخل رقم جوال سعودي صحيح (9 أرقام يبدأ بـ 5)" : "Enter a valid Saudi mobile (9 digits starting with 5)";
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -210,7 +211,7 @@ const Checkout = () => {
                   </div>
                   <div>
                     <Label className="text-foreground text-sm">{isAr ? "رقم الجوال" : "Phone"}</Label>
-                    <Input className={`mt-1.5 bg-background text-base ${errors.phone ? "border-destructive" : ""}`} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+966 5XX XXX XXXX" dir="ltr" maxLength={20} />
+                    <Input className={`mt-1.5 bg-background text-base ${errors.phone ? "border-destructive" : ""}`} value={phone} onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, "").slice(0, 9); setPhone(v); }} placeholder="5XXXXXXXX" dir="ltr" maxLength={9} inputMode="numeric" />
                     {errors.phone && <p className="text-destructive text-xs mt-1">{errors.phone}</p>}
                   </div>
                 </div>
