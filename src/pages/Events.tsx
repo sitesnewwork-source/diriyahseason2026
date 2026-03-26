@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -6,6 +7,8 @@ import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import BackButton from "@/components/BackButton";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { Button } from "@/components/ui/button";
+import EventBookingDialog from "@/components/EventBookingDialog";
 import eventCalligraphy from "@/assets/event-calligraphy-2.jpg";
 import eventKidsArt from "@/assets/event-kids-art.jpg";
 import eventArdah from "@/assets/event-ardah-2.jpg";
@@ -88,6 +91,7 @@ const allEvents = [
 const EventsPage = () => {
   const { lang } = useLanguage();
   const isAr = lang === "ar";
+  const [bookingEvent, setBookingEvent] = useState<typeof allEvents[0] | null>(null);
 
   return (
     <div className="min-h-screen bg-background" dir={isAr ? "rtl" : "ltr"}>
@@ -144,6 +148,13 @@ const EventsPage = () => {
                     </span>
                   ))}
                 </div>
+                <Button
+                  size="sm"
+                  className="mt-3 w-full"
+                  onClick={() => setBookingEvent(event)}
+                >
+                  {isAr ? "احجز الآن" : "Book Now"}
+                </Button>
               </motion.div>
             ))}
           </div>
@@ -151,6 +162,16 @@ const EventsPage = () => {
       </section>
 
       <Footer />
+
+      {bookingEvent && (
+        <EventBookingDialog
+          open={!!bookingEvent}
+          onOpenChange={(open) => !open && setBookingEvent(null)}
+          eventId={bookingEvent.id}
+          eventTitle={bookingEvent.title}
+          eventTitleEn={bookingEvent.titleEn}
+        />
+      )}
     </div>
   );
 };

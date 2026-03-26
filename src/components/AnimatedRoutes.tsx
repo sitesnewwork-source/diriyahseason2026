@@ -31,6 +31,7 @@ const AdminBookings = lazy(() => import("@/pages/admin/AdminBookings"));
 const AdminOrders = lazy(() => import("@/pages/admin/AdminOrders"));
 const AdminVisitors = lazy(() => import("@/pages/admin/AdminVisitors"));
 const AdminSettings = lazy(() => import("@/pages/admin/AdminSettings"));
+const AdminEventBookings = lazy(() => import("@/pages/admin/AdminEventBookings"));
 const Install = lazy(() => import("@/pages/Install"));
 
 const PageLoader = () => (
@@ -72,6 +73,7 @@ const AnimatedRoutes = forwardRef<HTMLDivElement>((_, ref) => {
             <Route path="messages" element={<AdminMessages />} />
             <Route path="bookings" element={<AdminBookings />} />
             <Route path="orders" element={<AdminOrders />} />
+            <Route path="event-bookings" element={<AdminEventBookings />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />

@@ -50,6 +50,45 @@ export type Database = {
         }
         Relationships: []
       }
+      event_bookings: {
+        Row: {
+          created_at: string
+          email: string | null
+          event_id: string
+          event_title: string
+          guests: number
+          id: string
+          name: string
+          notes: string | null
+          phone: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          event_id: string
+          event_title: string
+          guests?: number
+          id?: string
+          name: string
+          notes?: string | null
+          phone: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          event_id?: string
+          event_title?: string
+          guests?: number
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string
+          status?: string
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string
