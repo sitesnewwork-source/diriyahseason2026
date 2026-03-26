@@ -98,7 +98,9 @@ const EventsPage = () => {
       <SEOHead title={isAr ? "الفعاليات" : "Events"} description={isAr ? "اكتشفوا فعاليات الدرعية" : "Discover Diriyah events"} path="/events" />
       <Header />
 
-      <section className="pt-20 sm:pt-28 pb-6 sm:pb-8 bg-gradient-to-b from-gold/5 to-background dark:from-gold/10 dark:to-background">
+      <section className="pt-20 sm:pt-28 pb-6 sm:pb-8 bg-gradient-to-b from-gold/5 to-background dark:from-gold/10 dark:to-background relative overflow-hidden">
+        {/* Gold decorative line */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-32 sm:w-48 gold-line-animated z-10"><div className="h-px" /></div>
         <div className="container mx-auto px-4">
           <BackButton />
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={isAr ? "text-right" : "text-left"}>
@@ -107,7 +109,7 @@ const EventsPage = () => {
               <span>/</span>
               <span className="text-foreground">{isAr ? "الفعاليات" : "Events"}</span>
             </div>
-            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-3">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-3 text-shimmer-gold">
               {isAr ? "فعاليات عيد الدرعية" : "Diriyah Eid Events"}
             </h1>
             <p className="text-muted-foreground text-sm sm:text-base max-w-2xl">
@@ -129,7 +131,7 @@ const EventsPage = () => {
                     {isAr ? event.badge : event.badgeEn}
                   </span>
                 </div>
-                <h3 className="font-display text-base sm:text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
+                <h3 className="font-display text-base sm:text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors btn-luxury">
                   {isAr ? event.title : event.titleEn}
                 </h3>
                 <p className="text-xs sm:text-sm text-muted-foreground mb-3 line-clamp-2">
@@ -150,7 +152,7 @@ const EventsPage = () => {
                 </div>
                 <Button
                   size="sm"
-                  className="mt-3 w-full"
+                  className="mt-3 w-full btn-press glow-gold-hover"
                   onClick={() => setBookingEvent(event)}
                 >
                   {isAr ? "احجز الآن" : "Book Now"}

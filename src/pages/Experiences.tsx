@@ -41,7 +41,7 @@ const Experiences = () => {
               <ChevronIcon className="w-3 h-3" />
               <span className="text-foreground">{isAr ? "أنشطة سياحية" : "Tourist Activities"}</span>
             </div>
-            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-3">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-3 gold-sparkle">
               {isAr ? "أنشطة سياحية" : "Tourist Activities"}
             </h1>
             <p className="text-muted-foreground text-sm sm:text-base max-w-2xl">
@@ -91,7 +91,7 @@ const Experiences = () => {
                         {isAr ? exp.category : exp.categoryEn}
                       </span>
                     </div>
-                    <h3 className="font-display text-base sm:text-lg font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
+                    <h3 className="font-display text-base sm:text-lg font-bold text-foreground mb-1 group-hover:text-primary transition-colors btn-luxury">
                       {isAr ? exp.title : exp.titleEn}
                     </h3>
                     <p className="text-xs sm:text-sm text-muted-foreground mb-2 line-clamp-2">{isAr ? exp.description : exp.descriptionEn}</p>
