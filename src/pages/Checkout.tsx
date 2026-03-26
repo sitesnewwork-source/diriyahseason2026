@@ -119,13 +119,13 @@ const Checkout = () => {
     <div className="min-h-screen bg-background font-body" dir={isAr ? "rtl" : "ltr"}>
       <Header />
 
-      <main className="pt-28 pb-20 px-4">
+      <main className="pt-20 sm:pt-28 pb-12 sm:pb-20 px-3 sm:px-4">
         <div className="max-w-4xl mx-auto">
           <BackButton />
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-1 sm:mb-2">
             {isAr ? "إتمام الطلب" : "Checkout"}
           </h1>
-          <p className="text-muted-foreground mb-8">
+          <p className="text-sm sm:text-base text-muted-foreground mb-5 sm:mb-8">
             {isAr ? "راجع طلبك وأكمل عملية الدفع" : "Review your order and complete payment"}
           </p>
 
