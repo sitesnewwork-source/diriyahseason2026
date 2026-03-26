@@ -48,7 +48,7 @@ const StatItem = ({ value, suffix, label, delay }: StatItemProps) => {
       <div className="font-display text-4xl sm:text-5xl md:text-6xl font-bold text-shimmer-gold mb-2 gold-sparkle">
         {displayValue}{suffix}
       </div>
-      <div className="text-sm sm:text-base text-primary-foreground/60 group-hover:text-gold/70 transition-colors duration-300">{label}</div>
+      <div className="text-sm sm:text-base text-primary-foreground/70 group-hover:text-gold/80 transition-colors duration-300">{label}</div>
     </motion.div>
   );
 };
