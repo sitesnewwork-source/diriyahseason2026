@@ -17,10 +17,12 @@ import SectionDivider from "@/components/SectionDivider";
 import MarqueeBanner from "@/components/MarqueeBanner";
 import Footer from "@/components/Footer";
 import ScrollReveal from "@/components/ScrollReveal";
+import DarkModeParticles from "@/components/DarkModeParticles";
 
 const Index = () => {
   return (
-    <div className="min-h-screen overflow-x-hidden">
+    <div className="min-h-screen overflow-x-hidden relative">
+      <DarkModeParticles />
       <SEOHead title="الدرعية" description="اكتشفوا الدرعية - الوجهة التاريخية والثقافية للمملكة العربية السعودية. زوروا مطل البجيري وحي الطريف التاريخي." path="/" />
       <Header />
       <HeroSection />
