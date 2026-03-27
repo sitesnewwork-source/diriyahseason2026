@@ -10,6 +10,7 @@ const Places = lazy(() => import("@/pages/Places"));
 const Experiences = lazy(() => import("@/pages/Experiences"));
 const PlanVisit = lazy(() => import("@/pages/PlanVisit"));
 const Articles = lazy(() => import("@/pages/Articles"));
+const ArticleDetail = lazy(() => import("@/pages/ArticleDetail"));
 const Restaurants = lazy(() => import("@/pages/Restaurants"));
 const RestaurantDetail = lazy(() => import("@/pages/RestaurantDetail"));
 const Tickets = lazy(() => import("@/pages/Tickets"));
@@ -53,6 +54,7 @@ const AnimatedRoutes = forwardRef<HTMLDivElement>((_, ref) => {
           <Route path="/experiences" element={<PageTransition><Experiences /></PageTransition>} />
           <Route path="/plan" element={<PageTransition><PlanVisit /></PageTransition>} />
           <Route path="/articles" element={<PageTransition><Articles /></PageTransition>} />
+          <Route path="/article/:id" element={<PageTransition><ArticleDetail /></PageTransition>} />
           <Route path="/restaurants" element={<PageTransition><Restaurants /></PageTransition>} />
           <Route path="/restaurant/:id" element={<PageTransition><RestaurantDetail /></PageTransition>} />
           <Route path="/tickets" element={<PageTransition><Tickets /></PageTransition>} />
