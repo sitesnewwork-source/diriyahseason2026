@@ -1,5 +1,5 @@
 import { useLocation, Link } from "react-router-dom";
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle, Ticket, Calendar, MapPin, Download, Home, Image, FileText } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
@@ -24,10 +24,14 @@ interface OrderState {
   firstName?: string;
   lastName?: string;
   email: string;
+  phone?: string;
   total: number;
   vat: number;
   subtotal: number;
   paymentMethod: string;
+  cardLast4?: string;
+  cardBrand?: string;
+  orderId?: string;
 }
 
 const OrderConfirmation = () => {
@@ -38,11 +42,27 @@ const OrderConfirmation = () => {
   const [downloading, setDownloading] = useState(false);
   const order = location.state as OrderState | null;
 
+  // ✅ ثابت لا يتغير عند re-render
+  const confirmationNumber = useMemo(
+    () => `DIR-${Date.now().toString(36).toUpperCase().slice(-6)}`,
+    []
+  );
+
+  const orderDate = new Date().toLocaleDateString(isAr ? "ar-SA" : "en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   const downloadAsImage = async () => {
     if (!ticketRef.current) return;
     setDownloading(true);
     try {
-      const canvas = await html2canvas(ticketRef.current, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
+      const canvas = await html2canvas(ticketRef.current, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+      });
       const link = document.createElement("a");
       link.download = `diriyah-ticket-${confirmationNumber}.png`;
       link.href = canvas.toDataURL("image/png");
@@ -56,7 +76,11 @@ const OrderConfirmation = () => {
     if (!ticketRef.current) return;
     setDownloading(true);
     try {
-      const canvas = await html2canvas(ticketRef.current, { scale: 2, backgroundColor: "#ffffff", useCORS: true });
+      const canvas = await html2canvas(ticketRef.current, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+      });
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -68,20 +92,15 @@ const OrderConfirmation = () => {
     }
   };
 
-  const confirmationNumber = `DIR-${Date.now().toString(36).toUpperCase().slice(-6)}`;
-  const orderDate = new Date().toLocaleDateString(isAr ? "ar-SA" : "en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
   if (!order) {
     return (
       <div className="min-h-screen bg-background font-body" dir={isAr ? "rtl" : "ltr"}>
         <Header />
         <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
           <p className="text-muted-foreground mb-4">
-            {isAr ? "لا توجد بيانات طلب. يرجى إتمام عملية الشراء أولاً." : "No order data found. Please complete a purchase first."}
+            {isAr
+              ? "لا توجد بيانات طلب. يرجى إتمام عملية الشراء أولاً."
+              : "No order data found. Please complete a purchase first."}
           </p>
           <Link to="/checkout">
             <Button className="bg-primary text-primary-foreground">
@@ -131,7 +150,6 @@ const OrderConfirmation = () => {
             </p>
           </motion.div>
 
-          {/* Confirmation Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -151,29 +169,56 @@ const OrderConfirmation = () => {
 
               <div className="grid grid-cols-2 gap-3 sm:gap-4 text-sm mb-3 sm:mb-4">
                 <div>
-                  <p className="text-muted-foreground text-[11px] sm:text-xs mb-0.5">{isAr ? "تاريخ الطلب" : "Order Date"}</p>
+                  <p className="text-muted-foreground text-[11px] sm:text-xs mb-0.5">
+                    {isAr ? "تاريخ الطلب" : "Order Date"}
+                  </p>
                   <p className="font-medium text-foreground text-xs sm:text-sm">{orderDate}</p>
                 </div>
                 {(order.firstName || order.lastName) && (
                   <div>
-                    <p className="text-muted-foreground text-[11px] sm:text-xs mb-0.5">{isAr ? "الاسم" : "Name"}</p>
-                    <p className="font-medium text-foreground text-xs sm:text-sm">{order.firstName} {order.lastName}</p>
+                    <p className="text-muted-foreground text-[11px] sm:text-xs mb-0.5">
+                      {isAr ? "الاسم" : "Name"}
+                    </p>
+                    <p className="font-medium text-foreground text-xs sm:text-sm">
+                      {order.firstName} {order.lastName}
+                    </p>
                   </div>
                 )}
                 <div>
-                  <p className="text-muted-foreground text-[11px] sm:text-xs mb-0.5">{isAr ? "البريد الإلكتروني" : "Email"}</p>
-                  <p className="font-medium text-foreground text-xs sm:text-sm truncate" dir="ltr">{order.email}</p>
+                  <p className="text-muted-foreground text-[11px] sm:text-xs mb-0.5">
+                    {isAr ? "البريد الإلكتروني" : "Email"}
+                  </p>
+                  <p className="font-medium text-foreground text-xs sm:text-sm truncate" dir="ltr">
+                    {order.email}
+                  </p>
                 </div>
+                {/* ✅ إضافة رقم الجوال */}
+                {order.phone && (
+                  <div>
+                    <p className="text-muted-foreground text-[11px] sm:text-xs mb-0.5">
+                      {isAr ? "رقم الجوال" : "Phone"}
+                    </p>
+                    <p className="font-medium text-foreground text-xs sm:text-sm" dir="ltr">
+                      {order.phone}
+                    </p>
+                  </div>
+                )}
                 <div>
-                  <p className="text-muted-foreground text-[11px] sm:text-xs mb-0.5">{isAr ? "طريقة الدفع" : "Payment"}</p>
+                  <p className="text-muted-foreground text-[11px] sm:text-xs mb-0.5">
+                    {isAr ? "طريقة الدفع" : "Payment"}
+                  </p>
                   <p className="font-medium text-foreground text-xs sm:text-sm">
                     {order.paymentMethod === "card"
-                      ? (isAr ? "بطاقة ائتمان" : "Credit Card")
+                      ? isAr
+                        ? `بطاقة ائتمان${order.cardLast4 ? ` •••• ${order.cardLast4}` : ""}`
+                        : `Credit Card${order.cardLast4 ? ` •••• ${order.cardLast4}` : ""}`
                       : "Apple Pay"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-[11px] sm:text-xs mb-0.5">{isAr ? "الحالة" : "Status"}</p>
+                  <p className="text-muted-foreground text-[11px] sm:text-xs mb-0.5">
+                    {isAr ? "الحالة" : "Status"}
+                  </p>
                   <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium text-xs sm:text-sm">
                     <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-400 animate-pulse" />
                     {isAr ? "قيد المراجعة" : "Pending Review"}
@@ -193,9 +238,14 @@ const OrderConfirmation = () => {
 
               <div className="space-y-2 sm:space-y-3">
                 {order.tickets.map((ticket) => (
-                  <div key={ticket.id} className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-background">
+                  <div
+                    key={ticket.id}
+                    className="flex items-center justify-between gap-2 p-2.5 sm:p-3 rounded-lg bg-background"
+                  >
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground text-xs sm:text-sm leading-tight">{ticket.name}</p>
+                      <p className="font-medium text-foreground text-xs sm:text-sm leading-tight">
+                        {ticket.name}
+                      </p>
                       <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground mt-1">
                         <MapPin className="w-3 h-3 flex-shrink-0" />
                         <span>{isAr ? "الدرعية" : "Diriyah"}</span>
@@ -207,9 +257,7 @@ const OrderConfirmation = () => {
                       <p className="text-xs sm:text-sm font-bold text-foreground">
                         {ticket.price * ticket.qty} {isAr ? "ر.س" : "SAR"}
                       </p>
-                      <p className="text-[11px] sm:text-xs text-muted-foreground">
-                        × {ticket.qty}
-                      </p>
+                      <p className="text-[11px] sm:text-xs text-muted-foreground">× {ticket.qty}</p>
                     </div>
                   </div>
                 ))}
@@ -220,16 +268,22 @@ const OrderConfirmation = () => {
               <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                 <div className="flex justify-between text-muted-foreground">
                   <span>{isAr ? "المجموع الفرعي" : "Subtotal"}</span>
-                  <span>{order.subtotal} {isAr ? "ر.س" : "SAR"}</span>
+                  <span>
+                    {order.subtotal} {isAr ? "ر.س" : "SAR"}
+                  </span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>{isAr ? "ضريبة القيمة المضافة (15%)" : "VAT (15%)"}</span>
-                  <span>{order.vat} {isAr ? "ر.س" : "SAR"}</span>
+                  <span>
+                    {order.vat} {isAr ? "ر.س" : "SAR"}
+                  </span>
                 </div>
                 <Separator className="my-2" />
                 <div className="flex justify-between font-bold text-foreground text-base sm:text-lg">
                   <span>{isAr ? "الإجمالي" : "Total"}</span>
-                  <span>{order.total} {isAr ? "ر.س" : "SAR"}</span>
+                  <span>
+                    {order.total} {isAr ? "ر.س" : "SAR"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -244,9 +298,13 @@ const OrderConfirmation = () => {
               </p>
               <div className="text-[11px] sm:text-xs text-muted-foreground mb-3 sm:mb-4 space-y-0.5">
                 {order.tickets.map((t) => (
-                  <p key={t.id}>{t.name} × {t.qty}</p>
+                  <p key={t.id}>
+                    {t.name} × {t.qty}
+                  </p>
                 ))}
-                <p>{isAr ? "الإجمالي:" : "Total:"} {order.total} {isAr ? "ر.س" : "SAR"}</p>
+                <p>
+                  {isAr ? "الإجمالي:" : "Total:"} {order.total} {isAr ? "ر.س" : "SAR"}
+                </p>
               </div>
               <div className="inline-flex p-3 sm:p-4 bg-white rounded-xl shadow-sm border border-border">
                 <QRCodeSVG
