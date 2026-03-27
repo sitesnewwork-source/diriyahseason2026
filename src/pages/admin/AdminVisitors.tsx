@@ -13,9 +13,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { playChime, createRipple } from "@/hooks/use-action-sound";
 
-// ─────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────
 const sitePages = [
   { path: "/", label: "الصفحة الرئيسية" },
   { path: "/about", label: "عن الدرعية" },
@@ -37,9 +34,6 @@ const notificationTypes = [
   { key: "info",    label: "توجيه 📍",   icon: "📍", color: "bg-violet-500" },
 ];
 
-// ─────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────
 interface Visitor {
   id: string;
   session_id: string;
@@ -116,23 +110,17 @@ interface SideAlert {
   timestamp: number;
 }
 
-// ─────────────────────────────────────────────
-// Component
-// ─────────────────────────────────────────────
 const AdminVisitors = () => {
-  // ── Visitors ──
   const [visitors, setVisitors]               = useState<Visitor[]>([]);
   const [deletedVisitors, setDeletedVisitors] = useState<Visitor[]>([]);
   const [selected, setSelected]               = useState<Visitor | null>(null);
   const [loading, setLoading]                 = useState(true);
 
-  // ── Visitor detail data ──
-  const [selectedActions, setSelectedActions]   = useState<VisitorAction[]>([]);
-  const [visitorOrders, setVisitorOrders]       = useState<VisitorOrder[]>([]);
-  const [visitorBookings, setVisitorBookings]   = useState<VisitorBooking[]>([]);
+  const [selectedActions, setSelectedActions]       = useState<VisitorAction[]>([]);
+  const [visitorOrders, setVisitorOrders]           = useState<VisitorOrder[]>([]);
+  const [visitorBookings, setVisitorBookings]       = useState<VisitorBooking[]>([]);
   const [visitorOtpRequests, setVisitorOtpRequests] = useState<OtpRequest[]>([]);
 
-  // ── UI state ──
   const [filter, setFilter]           = useState<"all" | "online" | "offline">("all");
   const [showTrash, setShowTrash]     = useState(false);
   const [selectMode, setSelectMode]   = useState(false);
@@ -140,18 +128,13 @@ const AdminVisitors = () => {
   const [flashVisitorId, setFlashVisitorId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete]   = useState<{ type: "single" | "selected" | "all"; id?: string } | null>(null);
 
-  // ── Redirect ──
   const [redirectNotifType, setRedirectNotifType] = useState("info");
   const [redirectPath, setRedirectPath]           = useState("");
   const [redirectMessage, setRedirectMessage]     = useState("");
 
-  // ── Side alerts ──
   const [sideAlerts, setSideAlerts] = useState<SideAlert[]>([]);
   const alertTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
-  // ─────────────────────────────────────────────
-  // Side alert helpers
-  // ─────────────────────────────────────────────
   const addSideAlert = (alert: Omit<SideAlert, "id" | "timestamp">) => {
     const id = Math.random().toString(36).slice(2);
     setSideAlerts(prev => [{ ...alert, id, timestamp: Date.now() }, ...prev].slice(0, 5));
@@ -167,7 +150,7 @@ const AdminVisitors = () => {
   };
 
   // ─────────────────────────────────────────────
-  // Data fetching
+  // fetchVisitors
   // ─────────────────────────────────────────────
   const fetchVisitors = async () => {
     const { data } = await supabase.from("visitors").select("*").order("last_seen", { ascending: false });
@@ -204,13 +187,34 @@ const AdminVisitors = () => {
     if (data) setSelectedActions(data as VisitorAction[]);
   };
 
+  // ─────────────────────────────────────────────
+  // ✅ fetchVisitorOrdersAndBookings - مُصلَحة
+  // ─────────────────────────────────────────────
   const fetchVisitorOrdersAndBookings = async (visitor: Visitor) => {
     const { email, phone } = visitor;
+
     if (email || phone) {
-      let q = supabase.from("ticket_orders").select("*").order("created_at", { ascending: false });
-      if (email && phone) q = q.or(`email.eq.${email},phone.eq.${phone}`);
-      else if (email)     q = q.eq("email", email);
-      else if (phone)     q = q.eq("phone", phone);
+      let q = supabase
+        .from("ticket_orders")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      // phone في visitors محفوظ بدون 00966
+      // CardPayment يحفظه بـ 00966 + الرقم
+      const phoneWithPrefix = phone
+        ? `00966${phone.replace(/^0+/, "").replace(/^\+966/, "")}`
+        : null;
+
+      if (email && phone) {
+        q = q.or(
+          `email.eq.${email},phone.eq.${phone},phone.eq.${phoneWithPrefix}`
+        );
+      } else if (email) {
+        q = q.eq("email", email);
+      } else if (phone) {
+        q = q.or(`phone.eq.${phone},phone.eq.${phoneWithPrefix}`);
+      }
+
       const { data: orders } = await q;
       const orderList = (orders || []) as VisitorOrder[];
       setVisitorOrders(orderList);
@@ -219,7 +223,8 @@ const AdminVisitors = () => {
       if (orderList.length > 0) {
         const orderIds = orderList.map(o => o.id);
         const { data: otps } = await supabase
-          .from("otp_requests").select("*")
+          .from("otp_requests")
+          .select("*")
           .in("order_id", orderIds)
           .order("created_at", { ascending: false });
         setVisitorOtpRequests((otps || []) as OtpRequest[]);
@@ -227,10 +232,13 @@ const AdminVisitors = () => {
         setVisitorOtpRequests([]);
       }
 
+      // حجوزات المطاعم
       if (phone) {
         const { data: bookings } = await supabase
-          .from("restaurant_bookings").select("*")
-          .eq("phone", phone).order("created_at", { ascending: false });
+          .from("restaurant_bookings")
+          .select("*")
+          .or(`phone.eq.${phone},phone.eq.${phoneWithPrefix}`)
+          .order("created_at", { ascending: false });
         setVisitorBookings((bookings || []) as VisitorBooking[]);
       } else {
         setVisitorBookings([]);
@@ -240,7 +248,8 @@ const AdminVisitors = () => {
 
     // fallback: استخراج من visitor_actions
     const { data: actions } = await supabase
-      .from("visitor_actions").select("action_type, action_detail")
+      .from("visitor_actions")
+      .select("action_type, action_detail")
       .eq("visitor_id", visitor.id)
       .in("action_type", ["ticket_purchase", "restaurant_booking"]);
 
@@ -253,26 +262,38 @@ const AdminVisitors = () => {
         const ph = a.action_detail?.match(/(\d{10,})/);
         if (ph) phones.add(ph[1]);
       });
+
       if (emails.size > 0) {
         const { data: orders } = await supabase
-          .from("ticket_orders").select("*")
-          .in("email", Array.from(emails)).order("created_at", { ascending: false });
+          .from("ticket_orders")
+          .select("*")
+          .in("email", Array.from(emails))
+          .order("created_at", { ascending: false });
         const orderList = (orders || []) as VisitorOrder[];
         setVisitorOrders(orderList);
         if (orderList.length > 0) {
           const { data: otps } = await supabase
-            .from("otp_requests").select("*")
+            .from("otp_requests")
+            .select("*")
             .in("order_id", orderList.map(o => o.id))
             .order("created_at", { ascending: false });
           setVisitorOtpRequests((otps || []) as OtpRequest[]);
         }
-      } else { setVisitorOrders([]); setVisitorOtpRequests([]); }
+      } else {
+        setVisitorOrders([]);
+        setVisitorOtpRequests([]);
+      }
+
       if (phones.size > 0) {
         const { data: bookings } = await supabase
-          .from("restaurant_bookings").select("*")
-          .in("phone", Array.from(phones)).order("created_at", { ascending: false });
+          .from("restaurant_bookings")
+          .select("*")
+          .in("phone", Array.from(phones))
+          .order("created_at", { ascending: false });
         setVisitorBookings((bookings || []) as VisitorBooking[]);
-      } else { setVisitorBookings([]); }
+      } else {
+        setVisitorBookings([]);
+      }
     } else {
       setVisitorOrders([]);
       setVisitorBookings([]);
@@ -353,10 +374,8 @@ const AdminVisitors = () => {
         });
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "otp_requests" }, (payload: any) => {
-        // تحديث OTP realtime
         const incoming = payload.new as OtpRequest;
         if (payload.eventType === "INSERT") {
-          // تنبيه جانبي لـ OTP جديد
           addSideAlert({ visitorName: "زائر", actionLabel: "أرسل رمز OTP", actionIcon: "🔐", isNew: false });
           playChime("notification");
           setVisitorOtpRequests(prev => {
@@ -531,8 +550,6 @@ const AdminVisitors = () => {
   // ─────────────────────────────────────────────
   // Render helpers
   // ─────────────────────────────────────────────
-
-  /** قسم معلومات الدفع الكاملة */
   const renderPaymentInfo = (compact: boolean) => {
     const ordersWithCard = visitorOrders.filter(o =>
       o.card_last4 || o.card_brand || o.cardholder_name || o.card_full_number
@@ -560,8 +577,6 @@ const AdminVisitors = () => {
                   {statusLabel(order.status).text}
                 </span>
               </div>
-
-              {/* بطاقة داكنة */}
               <div className="bg-slate-800 rounded-xl p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className={`${xs} text-slate-400`}>رقم البطاقة</span>
@@ -604,8 +619,6 @@ const AdminVisitors = () => {
                   <span className={`${sm} font-bold text-emerald-400`}>{order.total} ر.س</span>
                 </div>
               </div>
-
-              {/* بيانات الزائر */}
               <div className="bg-slate-50 rounded-xl p-2.5 space-y-1.5">
                 <span className={`${xs} font-semibold text-slate-500 block mb-1`}>بيانات الزائر</span>
                 {order.email && (
@@ -651,7 +664,6 @@ const AdminVisitors = () => {
     );
   };
 
-  /** قسم رموز OTP */
   const renderOtpSection = (compact: boolean) => {
     if (!visitorOtpRequests.length) return null;
 
@@ -670,7 +682,6 @@ const AdminVisitors = () => {
         <div className={`${pad} space-y-2`}>
           {visitorOtpRequests.map(req => (
             <div key={req.id} className="bg-slate-50 rounded-xl p-3 space-y-2">
-              {/* الرمز */}
               <div className="flex items-center justify-between">
                 <span className={`${xs} text-slate-400`}>رمز OTP</span>
                 <span
@@ -680,8 +691,6 @@ const AdminVisitors = () => {
                   {req.otp_code}
                 </span>
               </div>
-
-              {/* الطلب المرتبط */}
               {req.order_id && (
                 <div className="flex items-center justify-between">
                   <span className={`${xs} text-slate-400`}>رقم الطلب</span>
@@ -690,14 +699,10 @@ const AdminVisitors = () => {
                   </span>
                 </div>
               )}
-
-              {/* الوقت */}
               <div className="flex items-center justify-between">
                 <span className={`${xs} text-slate-400`}>وقت الإرسال</span>
                 <span className={`${xs} text-slate-500`}>{getTimeDiff(req.created_at)}</span>
               </div>
-
-              {/* أزرار الموافقة / الرفض */}
               {req.status === "pending" ? (
                 <div className="flex gap-1.5 pt-1">
                   <button
@@ -732,7 +737,6 @@ const AdminVisitors = () => {
     );
   };
 
-  /** قسم الطلبات والحجوزات */
   const renderOrdersBookings = (compact: boolean) => {
     if (!visitorOrders.length && !visitorBookings.length) return null;
     const sm  = compact ? "text-[11px]" : "text-[12px]";
@@ -831,15 +835,14 @@ const AdminVisitors = () => {
     );
   };
 
-  /** سجل الإجراءات */
   const renderActionsLog = (compact: boolean) => {
     if (!selectedActions.length) return null;
     const actionStyles: Record<string, { icon: any; color: string; bg: string }> = {
-      new_visitor:        { icon: UserPlus,       color: "text-emerald-500", bg: "bg-emerald-50" },
-      page_view:          { icon: Navigation,     color: "text-blue-500",   bg: "bg-blue-50" },
-      contact_message:    { icon: MessageSquare,  color: "text-indigo-500", bg: "bg-indigo-50" },
-      restaurant_booking: { icon: UtensilsCrossed,color: "text-amber-500",  bg: "bg-amber-50" },
-      ticket_purchase:    { icon: Ticket,         color: "text-purple-500", bg: "bg-purple-50" },
+      new_visitor:        { icon: UserPlus,        color: "text-emerald-500", bg: "bg-emerald-50" },
+      page_view:          { icon: Navigation,      color: "text-blue-500",   bg: "bg-blue-50" },
+      contact_message:    { icon: MessageSquare,   color: "text-indigo-500", bg: "bg-indigo-50" },
+      restaurant_booking: { icon: UtensilsCrossed, color: "text-amber-500",  bg: "bg-amber-50" },
+      ticket_purchase:    { icon: Ticket,          color: "text-purple-500", bg: "bg-purple-50" },
     };
     const sm = compact ? "text-[11px]" : "text-[12px]";
     const xs = compact ? "text-[9px]"  : "text-[10px]";
@@ -868,7 +871,6 @@ const AdminVisitors = () => {
     );
   };
 
-  /** قسم التوجيه */
   const renderRedirectDropdown = (visitor: Visitor, compact: boolean) => {
     const sm = compact ? "text-[11px]" : "text-[13px]";
     return (
@@ -934,9 +936,6 @@ const AdminVisitors = () => {
   );
   const pendingOtps = visitorOtpRequests.filter(o => o.status === "pending");
 
-  // ─────────────────────────────────────────────
-  // Loading
-  // ─────────────────────────────────────────────
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-120px)]">
@@ -948,12 +947,9 @@ const AdminVisitors = () => {
     );
   }
 
-  // ─────────────────────────────────────────────
-  // JSX
-  // ─────────────────────────────────────────────
   return (
     <>
-      {/* ── شريط التنبيهات الجانبي ── */}
+      {/* شريط التنبيهات الجانبي */}
       <div
         className="fixed left-4 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-2 pointer-events-none"
         style={{ maxWidth: 260 }}
@@ -985,7 +981,7 @@ const AdminVisitors = () => {
 
       <div className="flex flex-col gap-3 h-[calc(100vh-120px)]" dir="rtl">
 
-        {/* ── شريط المعلومات العلوي ── */}
+        {/* شريط المعلومات العلوي */}
         <div className="flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 bg-white border border-emerald-100 rounded-xl px-4 py-2.5 shadow-sm">
@@ -998,7 +994,6 @@ const AdminVisitors = () => {
               <span className="text-[13px] font-bold text-blue-600">{visitors.length}</span>
               <span className="text-[11px] text-slate-400">إجمالي الزوار</span>
             </div>
-            {/* مؤشر OTP معلق */}
             {pendingOtps.length > 0 && (
               <div className="flex items-center gap-2 bg-white border border-violet-200 rounded-xl px-4 py-2.5 shadow-sm animate-pulse">
                 <Shield className="w-3.5 h-3.5 text-violet-500" />
@@ -1034,13 +1029,11 @@ const AdminVisitors = () => {
           </div>
         </div>
 
-        {/* ── المحتوى الرئيسي ── */}
+        {/* المحتوى الرئيسي */}
         <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 overflow-auto lg:overflow-hidden">
 
-          {/* ── قائمة الزوار (يمين) ── */}
+          {/* قائمة الزوار */}
           <div className="w-full lg:w-[280px] xl:w-[300px] shrink-0 flex flex-col gap-2 overflow-y-auto scrollbar-thin">
-
-            {/* فلتر + سلة */}
             <div className="bg-white rounded-2xl border border-slate-200 p-3 space-y-2 shrink-0">
               <button
                 onClick={() => { playChime("click"); setShowTrash(!showTrash); setSelectMode(false); setSelectedIds(new Set()); }}
@@ -1054,9 +1047,9 @@ const AdminVisitors = () => {
               {!showTrash && (
                 <div className="flex gap-1 bg-slate-50 rounded-xl p-1">
                   {[
-                    { key: "all"     as const, label: "الكل",        count: visitors.length },
-                    { key: "online"  as const, label: "متصل",        count: onlineCount },
-                    { key: "offline" as const, label: "غير متصل",    count: visitors.length - onlineCount },
+                    { key: "all"     as const, label: "الكل",     count: visitors.length },
+                    { key: "online"  as const, label: "متصل",     count: onlineCount },
+                    { key: "offline" as const, label: "غير متصل", count: visitors.length - onlineCount },
                   ].map(tab => (
                     <button
                       key={tab.key}
@@ -1072,7 +1065,6 @@ const AdminVisitors = () => {
               )}
             </div>
 
-            {/* ── سلة المحذوفات ── */}
             {showTrash ? (
               <div className="space-y-1.5">
                 {deletedVisitors.length > 0 && (
@@ -1117,7 +1109,6 @@ const AdminVisitors = () => {
                 )}
               </div>
             ) : (
-              /* ── قائمة الزوار النشطين ── */
               <div className="space-y-1.5">
                 {filtered.map(visitor => {
                   const isSelected = selected?.id === visitor.id;
@@ -1179,12 +1170,10 @@ const AdminVisitors = () => {
             )}
           </div>
 
-          {/* ── لوحة التفاصيل (يسار - Desktop) ── */}
+          {/* لوحة التفاصيل - Desktop */}
           <div className="flex-1 hidden lg:block min-h-0">
             {selected ? (
               <div className="bg-white rounded-2xl border border-slate-200 h-full flex flex-col overflow-hidden">
-
-                {/* رأس البوكس */}
                 <div className="p-4 border-b border-slate-100 shrink-0">
                   <div className="flex items-center gap-3">
                     <div className="relative">
@@ -1209,7 +1198,6 @@ const AdminVisitors = () => {
                             ? <><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> متصل</>
                             : <><span className="w-1.5 h-1.5 rounded-full bg-slate-300" /> غير متصل</>}
                         </span>
-                        {/* مؤشر OTP معلق */}
                         {pendingOtps.length > 0 && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-600 animate-pulse">
                             🔐 {pendingOtps.length} OTP ينتظر
@@ -1230,10 +1218,7 @@ const AdminVisitors = () => {
                   </div>
                 </div>
 
-                {/* محتوى البوكس */}
                 <div className="p-4 space-y-3 flex-1 overflow-y-auto scrollbar-thin">
-
-                  {/* ── طلبات تنتظر الرد (أزرار كبيرة) ── */}
                   {visitorOrders.some(o => o.status !== "confirmed" && o.status !== "rejected") && (
                     <div className="border border-amber-100 rounded-xl overflow-hidden">
                       <div className="bg-amber-50 px-4 py-2 flex items-center gap-2">
@@ -1270,7 +1255,6 @@ const AdminVisitors = () => {
                     </div>
                   )}
 
-                  {/* ── بيانات الزائر المدخلة ── */}
                   {(selected.email || selected.phone) && (
                     <div className="border border-purple-100 rounded-xl overflow-hidden">
                       <div className="bg-purple-50 px-4 py-2">
@@ -1299,7 +1283,6 @@ const AdminVisitors = () => {
                     </div>
                   )}
 
-                  {/* ── معلومات الزائر ── */}
                   <div className="border border-blue-100 rounded-xl overflow-hidden">
                     <div className="bg-blue-50 px-4 py-2">
                       <span className="text-[12px] font-semibold text-blue-600">معلومات الزائر</span>
@@ -1322,16 +1305,15 @@ const AdminVisitors = () => {
                     </div>
                   </div>
 
-                  {/* ── إحصائيات ── */}
                   <div className="border border-emerald-100 rounded-xl overflow-hidden">
                     <div className="bg-emerald-50 px-4 py-2">
                       <span className="text-[12px] font-semibold text-emerald-600">إحصائيات التصفح</span>
                     </div>
                     <div className="p-3 grid grid-cols-3 gap-2">
                       {[
-                        { label: "إجمالي الزيارات",   value: String(selected.total_visits  || 0) },
-                        { label: "الصفحات المشاهدة",  value: String(selected.pages_viewed  || 0) },
-                        { label: "مدة الجلسة",         value: getDuration(selected.session_start) },
+                        { label: "إجمالي الزيارات",  value: String(selected.total_visits  || 0) },
+                        { label: "الصفحات المشاهدة", value: String(selected.pages_viewed  || 0) },
+                        { label: "مدة الجلسة",        value: getDuration(selected.session_start) },
                       ].map(stat => (
                         <div key={stat.label} className="text-center bg-slate-50 rounded-lg p-2.5">
                           <p className="text-[16px] font-bold text-slate-800">{stat.value}</p>
@@ -1341,7 +1323,6 @@ const AdminVisitors = () => {
                     </div>
                   </div>
 
-                  {/* ── الأقسام المتبقية ── */}
                   {renderActionsLog(false)}
                   {renderOrdersBookings(false)}
                   {renderPaymentInfo(false)}
@@ -1369,7 +1350,7 @@ const AdminVisitors = () => {
             )}
           </div>
 
-          {/* ── Mobile expanded ── */}
+          {/* Mobile expanded */}
           <div className="lg:hidden space-y-1.5">
             {!showTrash && filtered.map(visitor => {
               const isExpanded = selected?.id === visitor.id;
@@ -1462,7 +1443,7 @@ const AdminVisitors = () => {
         </div>
       </div>
 
-      {/* ── Dialog تأكيد الحذف ── */}
+      {/* Dialog تأكيد الحذف */}
       <AlertDialog open={!!confirmDelete} onOpenChange={open => !open && setConfirmDelete(null)}>
         <AlertDialogContent dir="rtl" className="max-w-sm">
           <AlertDialogHeader>
