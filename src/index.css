@@ -373,3 +373,26 @@
 .btn-press:active {
   transform: scale(0.96);
 }
+
+/* Infinite marquee scroll */
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.333%); }
+}
+
+.animate-marquee {
+  animation: marquee-scroll 25s linear infinite;
+}
+
+/* Staggered fade-in for children */
+@keyframes stagger-fade {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Magnetic hover glow */
+.magnetic-glow:hover {
+  box-shadow: 0 0 30px hsl(43 72% 50% / 0.15), 0 0 60px hsl(43 72% 50% / 0.05);
+  transform: translateY(-2px);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
