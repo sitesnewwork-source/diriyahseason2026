@@ -1,5 +1,3 @@
-هذا الكود الكامل لـ CardPayment.tsx مع إصلاح CVV:
-
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
