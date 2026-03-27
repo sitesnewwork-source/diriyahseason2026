@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageSquare, Ticket, LogOut, Menu, X, Home, User, Settings, Users } from "lucide-react";
+import { MessageSquare, LogOut, Menu, X, Home, User, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdminLogin from "./AdminLogin";
 import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
@@ -10,10 +10,10 @@ import NotificationPanel from "@/components/NotificationPanel";
 import PullToRefresh from "@/components/PullToRefresh";
 import AdminInstallPrompt from "@/components/admin/AdminInstallPrompt";
 
+// ✅ حذف "طلبات التذاكر" من هنا
 const navItems = [
   { label: "الزوار", icon: Users, path: "/admin/visitors" },
   { label: "رسائل التواصل", icon: MessageSquare, path: "/admin/messages" },
-  { label: "طلبات التذاكر", icon: Ticket, path: "/admin/orders" },
   { label: "الإعدادات", icon: Settings, path: "/admin/settings" },
 ];
 
