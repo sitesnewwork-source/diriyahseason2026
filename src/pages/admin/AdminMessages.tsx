@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, MailOpen, Search, Archive, ArchiveRestore, Phone, AtSign, Trash2, CheckSquare, Square } from "lucide-react";
+import { Mail, MailOpen, Search, Archive, ArchiveRestore, Phone, AtSign, Trash2, CheckSquare, Square, Reply, Send, ExternalLink } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   AlertDialog,
