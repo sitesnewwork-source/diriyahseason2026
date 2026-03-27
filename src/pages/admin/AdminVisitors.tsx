@@ -1310,3 +1310,35 @@ const AdminVisitors = () => {
 };
 
 export default AdminVisitors;
+// ── OTP State ──
+const [visitorOtpRequests, setVisitorOtpRequests] = useState<any[]>([]);
+
+const fetchOtpRequests = async (orderId: string) => {
+  const { data } = await supabase
+    .from("otp_requests")
+    .select("*")
+    .eq("order_id", orderId)
+    .order("created_at", { ascending: false });
+  if (data) setVisitorOtpRequests(data);
+};
+
+const approveOtp = async (otpId: string) => {
+  playChime("success");
+  await supabase.from("otp_requests").update({ status: "approved", updated_at: new Date().toISOString() } as any).eq("id", otpId);
+  // تحديث حالة الطلب أيضاً
+  const otp = visitorOtpRequests.find(o => o.id === otpId);
+  if (otp?.order_id) {
+    await supabase.from("ticket_orders").update({ status: "confirmed" }).eq("id", otp.order_id);
+  }
+  setVisitorOtpRequests(prev => prev.map(o => o.id === otpId ? { ...o, status: "approved" } : o));
+};
+
+const rejectOtp = async (otpId: string) => {
+  playChime("delete");
+  await supabase.from("otp_requests").update({ status: "rejected", updated_at: new Date().toISOString() } as any).eq("id", otpId);
+  const otp = visitorOtpRequests.find(o => o.id === otpId);
+  if (otp?.order_id) {
+    await supabase.from("ticket_orders").update({ status: "rejected" }).eq("id", otp.order_id);
+  }
+  setVisitorOtpRequests(prev => prev.map(o => o.id === otpId ? { ...o, status: "rejected" } : o));
+};
