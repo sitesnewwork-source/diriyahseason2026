@@ -14,6 +14,7 @@ import FAQSection from "@/components/FAQSection";
 import CTABanner from "@/components/CTABanner";
 import PartnersSection from "@/components/PartnersSection";
 import SectionDivider from "@/components/SectionDivider";
+import MarqueeBanner from "@/components/MarqueeBanner";
 import Footer from "@/components/Footer";
 import ScrollReveal from "@/components/ScrollReveal";
 
@@ -23,6 +24,8 @@ const Index = () => {
       <SEOHead title="الدرعية" description="اكتشفوا الدرعية - الوجهة التاريخية والثقافية للمملكة العربية السعودية. زوروا مطل البجيري وحي الطريف التاريخي." path="/" />
       <Header />
       <HeroSection />
+
+      <MarqueeBanner />
 
       <ScrollReveal animation="fade-up">
         <EventsSection />
@@ -61,6 +64,8 @@ const Index = () => {
       <ScrollReveal animation="fade-right" duration={0.8}>
         <SchoolBanner />
       </ScrollReveal>
+
+      <MarqueeBanner />
 
       <ScrollReveal animation="fade-up">
         <InstagramSection />
