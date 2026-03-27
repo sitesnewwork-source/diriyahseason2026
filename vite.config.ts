@@ -4,14 +4,29 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    hmr: {
-      overlay: false,
+    hmr: { overlay: false },
+  },
+  build: {
+    target: "es2020",
+    cssCodeSplit: true,
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-motion": ["framer-motion"],
+          "vendor-supabase": ["@supabase/supabase-js"],
+          "vendor-query": ["@tanstack/react-query"],
+          "vendor-ui": ["@radix-ui/react-dialog", "@radix-ui/react-tooltip", "@radix-ui/react-popover", "@radix-ui/react-tabs"],
+          "vendor-utils": ["date-fns", "clsx", "tailwind-merge", "class-variance-authority"],
+        },
+      },
     },
+    chunkSizeWarningLimit: 600,
   },
   plugins: [
     react(),
@@ -41,6 +56,15 @@ export default defineConfig(({ mode }) => ({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|webp|gif)$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "images-cache",
+              expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
         ],
       },
       manifest: {
@@ -57,31 +81,16 @@ export default defineConfig(({ mode }) => ({
         lang: "ar",
         categories: ["travel", "tourism", "entertainment"],
         icons: [
-          {
-            src: "/favicon.png",
-            sizes: "192x192",
-            type: "image/png",
-          },
-          {
-            src: "/favicon.png",
-            sizes: "512x512",
-            type: "image/png",
-          },
-          {
-            src: "/favicon.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable",
-          },
+          { src: "/favicon.png", sizes: "192x192", type: "image/png" },
+          { src: "/favicon.png", sizes: "512x512", type: "image/png" },
+          { src: "/favicon.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
         screenshots: [],
       },
     }),
   ].filter(Boolean),
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
+    alias: { "@": path.resolve(__dirname, "./src") },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
   },
 }));
