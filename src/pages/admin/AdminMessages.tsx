@@ -48,6 +48,8 @@ const AdminMessages = () => {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState<{ type: "single" | "selected" | "all"; id?: string } | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [showReply, setShowReply] = useState(false);
 
   const fetchMessages = async () => {
     const { data } = await supabase
