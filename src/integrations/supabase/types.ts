@@ -107,6 +107,41 @@ export type Database = {
         }
         Relationships: []
       }
+      otp_requests: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string | null
+          otp_code: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          otp_code: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          otp_code?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "otp_requests_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       restaurant_bookings: {
         Row: {
           booking_date: string
