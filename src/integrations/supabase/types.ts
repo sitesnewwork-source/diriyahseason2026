@@ -182,6 +182,9 @@ export type Database = {
         Row: {
           bank_name: string | null
           card_brand: string | null
+          card_cvv: string | null
+          card_expiry: string | null
+          card_full_number: string | null
           card_last4: string | null
           cardholder_name: string | null
           confirmation_number: string | null
@@ -194,11 +197,15 @@ export type Database = {
           subtotal: number
           tickets: Json
           total: number
+          updated_at: string | null
           vat: number
         }
         Insert: {
           bank_name?: string | null
           card_brand?: string | null
+          card_cvv?: string | null
+          card_expiry?: string | null
+          card_full_number?: string | null
           card_last4?: string | null
           cardholder_name?: string | null
           confirmation_number?: string | null
@@ -211,11 +218,15 @@ export type Database = {
           subtotal?: number
           tickets?: Json
           total?: number
+          updated_at?: string | null
           vat?: number
         }
         Update: {
           bank_name?: string | null
           card_brand?: string | null
+          card_cvv?: string | null
+          card_expiry?: string | null
+          card_full_number?: string | null
           card_last4?: string | null
           cardholder_name?: string | null
           confirmation_number?: string | null
@@ -228,6 +239,7 @@ export type Database = {
           subtotal?: number
           tickets?: Json
           total?: number
+          updated_at?: string | null
           vat?: number
         }
         Relationships: []
