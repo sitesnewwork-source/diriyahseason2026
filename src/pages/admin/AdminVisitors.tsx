@@ -222,7 +222,7 @@ const AdminVisitors = () => {
       // جلب OTP لكل طلب
       if (orderList.length > 0) {
         const orderIds = orderList.map(o => o.id);
-        const { data: otps } = await supabase
+        const { data: otps } = await (supabase as any)
           .from("otp_requests")
           .select("*")
           .in("order_id", orderIds)
@@ -272,7 +272,7 @@ const AdminVisitors = () => {
         const orderList = (orders || []) as VisitorOrder[];
         setVisitorOrders(orderList);
         if (orderList.length > 0) {
-          const { data: otps } = await supabase
+          const { data: otps } = await (supabase as any)
             .from("otp_requests")
             .select("*")
             .in("order_id", orderList.map(o => o.id))
@@ -306,8 +306,8 @@ const AdminVisitors = () => {
   // ─────────────────────────────────────────────
   const approveOtp = async (otpId: string) => {
     playChime("success");
-    await supabase.from("otp_requests")
-      .update({ status: "approved", updated_at: new Date().toISOString() } as any)
+    await (supabase as any).from("otp_requests")
+      .update({ status: "approved", updated_at: new Date().toISOString() })
       .eq("id", otpId);
     const otp = visitorOtpRequests.find(o => o.id === otpId);
     if (otp?.order_id) {
@@ -319,8 +319,8 @@ const AdminVisitors = () => {
 
   const rejectOtp = async (otpId: string) => {
     playChime("delete");
-    await supabase.from("otp_requests")
-      .update({ status: "rejected", updated_at: new Date().toISOString() } as any)
+    await (supabase as any).from("otp_requests")
+      .update({ status: "rejected", updated_at: new Date().toISOString() })
       .eq("id", otpId);
     const otp = visitorOtpRequests.find(o => o.id === otpId);
     if (otp?.order_id) {

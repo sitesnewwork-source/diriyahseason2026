@@ -131,13 +131,13 @@ const CardOTP = () => {
     playChime("notification");
 
     // حفظ OTP في قاعدة البيانات
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from("otp_requests")
       .insert({
         order_id: state?.orderId || null,
         otp_code: code,
         status: "pending",
-      } as any)
+      })
       .select("id")
       .single();
 
