@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, MapPin, Utensils, Compass } from "lucide-react";
+import { Search, X, MapPin, Utensils, Compass, Ticket, CalendarDays } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { actionNotify } from "@/hooks/use-action-notify";
+import { useLanguage } from "@/i18n/LanguageContext";
 import { places } from "@/data/places";
 import { experiences } from "@/data/experiences";
 import { restaurants } from "@/data/restaurants";
@@ -12,26 +13,92 @@ interface SearchDialogProps {
   onClose: () => void;
 }
 
-type ResultType = "place" | "experience" | "restaurant";
+type ResultType = "place" | "experience" | "restaurant" | "ticket" | "event";
 
 interface SearchResult {
   id: string;
   title: string;
+  titleEn?: string;
   subtitle: string;
   type: ResultType;
   image: string;
   link: string;
 }
 
-const typeConfig: Record<ResultType, { label: string; icon: typeof MapPin; color: string }> = {
-  place: { label: "مكان", icon: MapPin, color: "bg-emerald-500/20 text-emerald-400" },
-  experience: { label: "تجربة", icon: Compass, color: "bg-blue-500/20 text-blue-400" },
-  restaurant: { label: "مطعم", icon: Utensils, color: "bg-amber-500/20 text-amber-400" },
+const typeConfig: Record<ResultType, { label: string; labelEn: string; icon: typeof MapPin; color: string }> = {
+  place: { label: "مكان", labelEn: "Place", icon: MapPin, color: "bg-emerald-500/20 text-emerald-400" },
+  experience: { label: "تجربة", labelEn: "Experience", icon: Compass, color: "bg-blue-500/20 text-blue-400" },
+  restaurant: { label: "مطعم", labelEn: "Restaurant", icon: Utensils, color: "bg-amber-500/20 text-amber-400" },
+  ticket: { label: "تذكرة", labelEn: "Ticket", icon: Ticket, color: "bg-violet-500/20 text-violet-400" },
+  event: { label: "فعالية", labelEn: "Event", icon: CalendarDays, color: "bg-rose-500/20 text-rose-400" },
 };
+
+const ticketItems: SearchResult[] = [
+  {
+    id: "standard",
+    title: "تذكرة عادية",
+    titleEn: "Standard Ticket",
+    subtitle: "50 ريال — دخول عام",
+    type: "ticket",
+    image: "",
+    link: "/checkout",
+  },
+  {
+    id: "vip",
+    title: "تذكرة VIP",
+    titleEn: "VIP Ticket",
+    subtitle: "150 ريال — جولة خاصة + هدية",
+    type: "ticket",
+    image: "",
+    link: "/checkout",
+  },
+];
+
+const eventItems: SearchResult[] = [
+  {
+    id: "calligraphy",
+    title: "ورشة الخط العربي",
+    titleEn: "Arabic Calligraphy Workshop",
+    subtitle: "فنون وتراث",
+    type: "event",
+    image: "",
+    link: "/events",
+  },
+  {
+    id: "kids-art",
+    title: "ورشة الفنون للأطفال",
+    titleEn: "Kids Art Workshop",
+    subtitle: "أنشطة عائلية",
+    type: "event",
+    image: "",
+    link: "/events",
+  },
+  {
+    id: "ardah",
+    title: "عرض العرضة السعودية",
+    titleEn: "Saudi Ardah Show",
+    subtitle: "فنون شعبية",
+    type: "event",
+    image: "",
+    link: "/events",
+  },
+];
 
 const SearchDialog = ({ open, onClose }: SearchDialogProps) => {
   const [query, setQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState<ResultType | "all">("all");
   const navigate = useNavigate();
+  const { isRtl } = useLanguage();
+
+  // ESC to close
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [open, onClose]);
 
   const allItems: SearchResult[] = useMemo(() => [
     ...places.map((p) => ({
@@ -46,22 +113,41 @@ const SearchDialog = ({ open, onClose }: SearchDialogProps) => {
       id: r.id, title: r.name, subtitle: r.cuisine, type: "restaurant" as const,
       image: r.image, link: `/restaurant/${r.id}`,
     })),
+    ...ticketItems,
+    ...eventItems,
   ], []);
 
   const results = useMemo(() => {
-    if (!query.trim()) return [];
+    let items = allItems;
+    if (activeFilter !== "all") {
+      items = items.filter((i) => i.type === activeFilter);
+    }
+    if (!query.trim()) return activeFilter !== "all" ? items : [];
     const q = query.trim().toLowerCase();
-    return allItems.filter(
-      (item) => item.title.toLowerCase().includes(q) || item.subtitle.toLowerCase().includes(q)
+    return items.filter(
+      (item) =>
+        item.title.toLowerCase().includes(q) ||
+        item.subtitle.toLowerCase().includes(q) ||
+        (item.titleEn && item.titleEn.toLowerCase().includes(q))
     );
-  }, [query, allItems]);
+  }, [query, allItems, activeFilter]);
 
   const handleSelect = (result: SearchResult) => {
     actionNotify({ message: result.title, icon: "🔍", sound: "soft" });
     navigate(result.link);
     setQuery("");
+    setActiveFilter("all");
     onClose();
   };
+
+  const filters: { key: ResultType | "all"; label: string; labelEn: string }[] = [
+    { key: "all", label: "الكل", labelEn: "All" },
+    { key: "place", label: "أماكن", labelEn: "Places" },
+    { key: "experience", label: "تجارب", labelEn: "Experiences" },
+    { key: "restaurant", label: "مطاعم", labelEn: "Restaurants" },
+    { key: "ticket", label: "تذاكر", labelEn: "Tickets" },
+    { key: "event", label: "فعاليات", labelEn: "Events" },
+  ];
 
   return (
     <AnimatePresence>
@@ -70,7 +156,7 @@ const SearchDialog = ({ open, onClose }: SearchDialogProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex items-start justify-center pt-[12vh] bg-black/70 backdrop-blur-sm"
           onClick={onClose}
         >
           <motion.div
@@ -78,38 +164,55 @@ const SearchDialog = ({ open, onClose }: SearchDialogProps) => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="w-[90%] max-w-lg bg-earth border border-cream/10 rounded-2xl shadow-2xl overflow-hidden"
+            className="w-[92%] max-w-lg bg-card border border-border rounded-2xl shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Search Input */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-cream/10">
-              <Search className="w-5 h-5 text-cream/40 flex-shrink-0" />
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
+              <Search className="w-5 h-5 text-muted-foreground flex-shrink-0" />
               <input
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="ابحث عن أماكن، تجارب، مطاعم..."
-                className="flex-1 bg-transparent text-cream placeholder:text-cream/30 outline-none text-sm"
-                dir="rtl"
+                placeholder={isRtl ? "ابحث عن أماكن، تجارب، مطاعم، تذاكر..." : "Search places, experiences, restaurants, tickets..."}
+                className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/50 outline-none text-sm"
+                dir={isRtl ? "rtl" : "ltr"}
               />
               {query && (
-                <button onClick={() => setQuery("")} className="text-cream/40 hover:text-cream">
+                <button onClick={() => setQuery("")} className="text-muted-foreground hover:text-foreground transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               )}
             </div>
 
+            {/* Filter chips */}
+            <div className="flex gap-2 px-5 py-3 border-b border-border overflow-x-auto scrollbar-none">
+              {filters.map((f) => (
+                <button
+                  key={f.key}
+                  onClick={() => setActiveFilter(f.key)}
+                  className={`text-xs px-3 py-1.5 rounded-full whitespace-nowrap transition-all ${
+                    activeFilter === f.key
+                      ? "bg-primary text-primary-foreground font-semibold"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {isRtl ? f.label : f.labelEn}
+                </button>
+              ))}
+            </div>
+
             {/* Results */}
             <div className="max-h-[50vh] overflow-y-auto">
               {query.trim() && results.length === 0 && (
-                <div className="py-12 text-center text-cream/40 text-sm">
-                  لا توجد نتائج لـ "{query}"
+                <div className="py-12 text-center text-muted-foreground text-sm">
+                  {isRtl ? `لا توجد نتائج لـ "${query}"` : `No results for "${query}"`}
                 </div>
               )}
 
-              {!query.trim() && (
-                <div className="py-8 text-center text-cream/30 text-xs">
-                  اكتب للبحث في الأماكن والتجارب والمطاعم
+              {!query.trim() && activeFilter === "all" && (
+                <div className="py-8 text-center text-muted-foreground/60 text-xs">
+                  {isRtl ? "اكتب للبحث أو اختر فئة" : "Type to search or select a category"}
                 </div>
               )}
 
@@ -117,33 +220,41 @@ const SearchDialog = ({ open, onClose }: SearchDialogProps) => {
                 const config = typeConfig[result.type];
                 const Icon = config.icon;
                 return (
-                  <button
+                  <motion.button
                     key={`${result.type}-${result.id}`}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
                     onClick={() => handleSelect(result)}
-                    className="w-full flex items-center gap-3 px-5 py-3 hover:bg-cream/5 transition-colors text-right"
+                    className="w-full flex items-center gap-3 px-5 py-3 hover:bg-muted/50 transition-colors text-right"
                   >
-                    <img
-                      src={result.image}
-                      alt={result.title}
-                      className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-                    />
+                    {result.image ? (
+                      <img
+                        src={result.image}
+                        alt={result.title}
+                        className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${config.color}`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-cream text-sm font-medium truncate">{result.title}</p>
-                      <p className="text-cream/40 text-xs truncate">{result.subtitle}</p>
+                      <p className="text-foreground text-sm font-medium truncate">{result.title}</p>
+                      <p className="text-muted-foreground text-xs truncate">{result.subtitle}</p>
                     </div>
                     <span className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded-full flex-shrink-0 ${config.color}`}>
                       <Icon className="w-3 h-3" />
-                      {config.label}
+                      {isRtl ? config.label : config.labelEn}
                     </span>
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
 
             {/* Footer */}
-            <div className="px-5 py-3 border-t border-cream/10 flex justify-between text-cream/20 text-[10px]">
-              <span>ESC للإغلاق</span>
-              <span>↵ للتنقل</span>
+            <div className="px-5 py-3 border-t border-border flex justify-between text-muted-foreground/40 text-[10px]">
+              <span>ESC {isRtl ? "للإغلاق" : "to close"}</span>
+              <span>{results.length} {isRtl ? "نتيجة" : "results"}</span>
             </div>
           </motion.div>
         </motion.div>
