@@ -7,6 +7,7 @@ import SEOHead from "@/components/SEOHead";
 import { places } from "@/data/places";
 import { useLanguage } from "@/i18n/LanguageContext";
 import BackButton from "@/components/BackButton";
+import ScrollReveal from "@/components/ScrollReveal";
 
 const Places = () => {
   const { lang } = useLanguage();
@@ -45,13 +46,7 @@ const Places = () => {
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             {places.map((place, i) => (
-              <motion.div
-                key={place.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-              >
+              <ScrollReveal key={place.id} animation={i % 2 === 0 ? "fade-left" : "fade-right"} delay={i * 0.08}>
                 <Link to={`/place/${place.id}`} className="group block">
                   <div className="relative aspect-[16/10] rounded-lg overflow-hidden mb-4 dark:ring-1 dark:ring-border">
                     <img src={place.detailImage} alt={isAr ? place.name : place.nameEn} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
@@ -74,7 +69,7 @@ const Places = () => {
                     </span>
                   </div>
                 </Link>
-              </motion.div>
+              </ScrollReveal>
             ))}
           </div>
         </div>

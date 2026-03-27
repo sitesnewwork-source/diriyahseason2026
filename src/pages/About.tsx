@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { useLanguage } from "@/i18n/LanguageContext";
 import BackButton from "@/components/BackButton";
+import ScrollReveal from "@/components/ScrollReveal";
 import introImg from "@/assets/intro-people.jpg";
 import placeTuraif from "@/assets/place-turaif.jpg";
 import placeBujairi from "@/assets/place-bujairi.jpg";
@@ -77,20 +78,10 @@ const About = () => {
       <section className="py-10 md:py-16">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="order-2 lg:order-1"
-            >
+            <ScrollReveal animation="fade-right" className="order-2 lg:order-1">
               <img src={placeTuraif} alt="حي الطريف" className="w-full rounded-lg" loading="lazy" />
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="order-1 lg:order-2 text-right"
-            >
+            </ScrollReveal>
+            <ScrollReveal animation="fade-up" delay={0.1} className="order-1 lg:order-2 text-right">
               <h2 className="font-display text-2xl md:text-4xl font-bold text-foreground mb-4">
                 قصة الدرعية
               </h2>
@@ -105,7 +96,7 @@ const About = () => {
                   اليوم، تشهد الدرعية تحولاً نوعياً ضمن رؤية المملكة ٢٠٣٠، لتصبح وجهة ثقافية وسياحية عالمية تجمع بين عراقة التاريخ وحداثة التجربة.
                 </p>
               </div>
-            </motion.div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -114,12 +105,7 @@ const About = () => {
       <section className="py-10 md:py-16 bg-card border-t border-border">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14 items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-right"
-            >
+            <ScrollReveal animation="fade-up" className="text-right">
               <h2 className="font-display text-2xl md:text-4xl font-bold text-foreground mb-4">
                 رؤية المستقبل
               </h2>
@@ -131,17 +117,13 @@ const About = () => {
                   تشمل الخطط المستقبلية متاحف عالمية، فنادق فاخرة، مراكز ثقافية، ومساحات ترفيهية متنوعة، كلها مستوحاة من الطراز المعماري النجدي الأصيل.
                 </p>
               </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
+            </ScrollReveal>
+            <ScrollReveal animation="fade-left" delay={0.15}>
               <div className="grid grid-cols-2 gap-3">
                 <img src={placeBujairi} alt="مطل البجيري" className="w-full rounded-lg" loading="lazy" />
                 <img src={placeWadi} alt="وادي حنيفة" className="w-full rounded-lg mt-8" loading="lazy" />
               </div>
-            </motion.div>
+            </ScrollReveal>
           </div>
         </div>
       </section>
