@@ -4,8 +4,8 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import { ArrowLeft, ArrowRight, Clock, Calendar } from "lucide-react";
 
 const LatestArticles = () => {
-  const { language } = useLanguage();
-  const isAr = language === "ar";
+  const { lang } = useLanguage();
+  const isAr = lang === "ar";
   const latest = articles.slice(0, 3);
 
   return (

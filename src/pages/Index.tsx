@@ -74,6 +74,10 @@ const Index = () => {
         <InstagramSection />
       </ScrollReveal>
 
+      <ScrollReveal animation="fade-up">
+        <LatestArticles />
+      </ScrollReveal>
+
       <SectionDivider variant="gold" />
 
       <ScrollReveal animation="fade-up">
