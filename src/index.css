@@ -60,52 +60,52 @@
   }
 
   .dark {
-    --background: 0 0% 4%;
-    --foreground: 40 15% 90%;
+    --background: 220 15% 4%;
+    --foreground: 40 18% 92%;
 
-    --card: 0 0% 7%;
-    --card-foreground: 40 15% 90%;
+    --card: 220 12% 7%;
+    --card-foreground: 40 18% 92%;
 
-    --popover: 0 0% 6%;
-    --popover-foreground: 40 15% 90%;
+    --popover: 220 12% 6%;
+    --popover-foreground: 40 18% 92%;
 
-    --primary: 43 72% 50%;
-    --primary-foreground: 0 0% 4%;
+    --primary: 43 80% 52%;
+    --primary-foreground: 220 15% 4%;
 
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 40 15% 90%;
+    --secondary: 220 8% 12%;
+    --secondary-foreground: 40 18% 92%;
 
-    --muted: 0 0% 10%;
-    --muted-foreground: 40 8% 50%;
+    --muted: 220 8% 10%;
+    --muted-foreground: 40 10% 55%;
 
-    --accent: 43 72% 50%;
-    --accent-foreground: 0 0% 4%;
+    --accent: 43 80% 52%;
+    --accent-foreground: 220 15% 4%;
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 40 15% 95%;
 
-    --border: 0 0% 14%;
-    --input: 0 0% 14%;
-    --ring: 43 72% 50%;
+    --border: 43 20% 14%;
+    --input: 43 15% 14%;
+    --ring: 43 80% 52%;
 
-    --gold: 43 68% 48%;
-    --gold-light: 45 55% 58%;
+    --gold: 43 75% 50%;
+    --gold-light: 45 60% 60%;
     --gold-dark: 38 65% 38%;
-    --sand: 0 0% 8%;
-    --sand-dark: 0 0% 12%;
-    --earth: 40 12% 82%;
-    --earth-light: 40 8% 60%;
-    --cream: 0 0% 6%;
-    --burgundy: 43 68% 48%;
+    --sand: 220 10% 8%;
+    --sand-dark: 220 8% 12%;
+    --earth: 40 14% 84%;
+    --earth-light: 40 10% 62%;
+    --cream: 220 10% 6%;
+    --burgundy: 43 75% 50%;
 
-    --sidebar-background: 0 0% 4%;
-    --sidebar-foreground: 40 15% 90%;
-    --sidebar-primary: 40 15% 90%;
-    --sidebar-primary-foreground: 0 0% 4%;
-    --sidebar-accent: 0 0% 10%;
-    --sidebar-accent-foreground: 40 15% 90%;
-    --sidebar-border: 0 0% 14%;
-    --sidebar-ring: 43 72% 50%;
+    --sidebar-background: 220 15% 4%;
+    --sidebar-foreground: 40 18% 92%;
+    --sidebar-primary: 40 18% 92%;
+    --sidebar-primary-foreground: 220 15% 4%;
+    --sidebar-accent: 220 8% 10%;
+    --sidebar-accent-foreground: 40 18% 92%;
+    --sidebar-border: 43 15% 14%;
+    --sidebar-ring: 43 80% 52%;
   }
 }
 
@@ -395,4 +395,75 @@
   box-shadow: 0 0 30px hsl(43 72% 50% / 0.15), 0 0 60px hsl(43 72% 50% / 0.05);
   transform: translateY(-2px);
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ===== ENHANCED DARK MODE GOLD EFFECTS ===== */
+
+/* Dark mode ambient gold glow on cards */
+.dark .glow-gold-card {
+  box-shadow: 0 0 20px hsl(43 75% 50% / 0.08), 0 4px 30px hsl(43 75% 50% / 0.04);
+}
+
+.dark .glow-gold-card:hover {
+  box-shadow: 0 0 30px hsl(43 75% 50% / 0.15), 0 8px 40px hsl(43 75% 50% / 0.08);
+}
+
+/* Gold text glow in dark mode */
+.dark .text-shimmer-gold {
+  filter: drop-shadow(0 0 8px hsl(43 80% 52% / 0.4));
+}
+
+/* Enhanced gold glow pulse for dark mode */
+.dark .glow-gold {
+  animation: glow-pulse-dark 3s ease-in-out infinite;
+}
+
+@keyframes glow-pulse-dark {
+  0%, 100% { box-shadow: 0 0 12px hsl(43 80% 52% / 0.35), 0 0 30px hsl(43 80% 52% / 0.12), inset 0 0 8px hsl(43 80% 52% / 0.05); }
+  50% { box-shadow: 0 0 24px hsl(43 80% 52% / 0.5), 0 0 60px hsl(43 80% 52% / 0.2), inset 0 0 12px hsl(43 80% 52% / 0.08); }
+}
+
+/* Dark mode gold border glow on hover */
+.dark .glow-gold-hover:hover {
+  animation: glow-pulse-dark 2s ease-in-out infinite;
+  border-color: hsl(43 80% 52% / 0.6);
+}
+
+/* Dark mode gold line animation - brighter */
+.dark .gold-line-animated::after {
+  background: linear-gradient(90deg, transparent, hsl(43 80% 55%), hsl(45 85% 72%), hsl(43 80% 55%), transparent);
+  height: 2px;
+  filter: drop-shadow(0 0 4px hsl(43 80% 52% / 0.5));
+}
+
+/* Gold ambient halo behind headings in dark mode */
+.dark .gold-sparkle::before,
+.dark .gold-sparkle::after {
+  color: hsl(43 80% 60%);
+  filter: drop-shadow(0 0 3px hsl(43 80% 52% / 0.6));
+}
+
+/* Subtle gold vignette on dark cards */
+.dark .border-gradient-gold {
+  background-image:
+    linear-gradient(hsl(220 12% 7%), hsl(220 12% 7%)),
+    conic-gradient(from var(--angle), hsl(43 80% 52%), hsl(45 85% 65%), hsl(38 70% 42%), hsl(43 80% 52%));
+  filter: drop-shadow(0 0 6px hsl(43 80% 52% / 0.2));
+}
+
+/* Dark mode magnetic glow — stronger gold */
+.dark .magnetic-glow:hover {
+  box-shadow: 0 0 40px hsl(43 80% 52% / 0.2), 0 0 80px hsl(43 80% 52% / 0.08);
+}
+
+/* Dark mode section divider glow */
+.dark .diamond-pulse {
+  filter: drop-shadow(0 0 6px hsl(43 80% 52% / 0.5));
+}
+
+/* Dark mode btn-luxury underline glow */
+.dark .btn-luxury::after {
+  background: linear-gradient(90deg, hsl(43 80% 52%), hsl(45 85% 68%));
+  filter: drop-shadow(0 0 4px hsl(43 80% 52% / 0.5));
+  height: 2px;
 }
