@@ -1,22 +1,31 @@
+import { lazy, Suspense } from "react";
 import Header from "@/components/Header";
 import SEOHead from "@/components/SEOHead";
 import HeroSection from "@/components/HeroSection";
-import EventsSection from "@/components/EventsSection";
-import ExperienceSection from "@/components/ExperienceSection";
-import StatsSection from "@/components/StatsSection";
-import PromoBanner from "@/components/PromoBanner";
-import HistoryBanner from "@/components/HistoryBanner";
-import PlacesSection from "@/components/PlacesSection";
-import RestaurantsPreview from "@/components/RestaurantsPreview";
-import SchoolBanner from "@/components/SchoolBanner";
-import InstagramSection from "@/components/InstagramSection";
-import FAQSection from "@/components/FAQSection";
-import CTABanner from "@/components/CTABanner";
-import PartnersSection from "@/components/PartnersSection";
-import SectionDivider from "@/components/SectionDivider";
 import MarqueeBanner from "@/components/MarqueeBanner";
 import Footer from "@/components/Footer";
 import ScrollReveal from "@/components/ScrollReveal";
+import SectionDivider from "@/components/SectionDivider";
+
+// Lazy load below-fold sections
+const EventsSection = lazy(() => import("@/components/EventsSection"));
+const ExperienceSection = lazy(() => import("@/components/ExperienceSection"));
+const StatsSection = lazy(() => import("@/components/StatsSection"));
+const PromoBanner = lazy(() => import("@/components/PromoBanner"));
+const HistoryBanner = lazy(() => import("@/components/HistoryBanner"));
+const PlacesSection = lazy(() => import("@/components/PlacesSection"));
+const RestaurantsPreview = lazy(() => import("@/components/RestaurantsPreview"));
+const SchoolBanner = lazy(() => import("@/components/SchoolBanner"));
+const InstagramSection = lazy(() => import("@/components/InstagramSection"));
+const FAQSection = lazy(() => import("@/components/FAQSection"));
+const CTABanner = lazy(() => import("@/components/CTABanner"));
+const PartnersSection = lazy(() => import("@/components/PartnersSection"));
+
+const SectionFallback = () => (
+  <div className="w-full h-32 flex items-center justify-center">
+    <div className="w-6 h-6 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+  </div>
+);
 
 const Index = () => {
   return (
@@ -27,61 +36,85 @@ const Index = () => {
 
       <MarqueeBanner />
 
-      <ScrollReveal animation="fade-up">
-        <EventsSection />
-      </ScrollReveal>
+      <Suspense fallback={<SectionFallback />}>
+        <ScrollReveal animation="fade-up">
+          <EventsSection />
+        </ScrollReveal>
+      </Suspense>
 
       <SectionDivider />
 
-      <ScrollReveal animation="fade-up" delay={0.1}>
-        <ExperienceSection />
-      </ScrollReveal>
+      <Suspense fallback={<SectionFallback />}>
+        <ScrollReveal animation="fade-up" delay={0.1}>
+          <ExperienceSection />
+        </ScrollReveal>
+      </Suspense>
 
-      <ScrollReveal animation="fade">
-        <StatsSection />
-      </ScrollReveal>
+      <Suspense fallback={<SectionFallback />}>
+        <ScrollReveal animation="fade">
+          <StatsSection />
+        </ScrollReveal>
+      </Suspense>
 
-      <ScrollReveal animation="zoom" duration={0.9}>
-        <PromoBanner />
-      </ScrollReveal>
+      <Suspense fallback={<SectionFallback />}>
+        <ScrollReveal animation="zoom" duration={0.9}>
+          <PromoBanner />
+        </ScrollReveal>
+      </Suspense>
 
-      <ScrollReveal animation="fade">
-        <HistoryBanner />
-      </ScrollReveal>
+      <Suspense fallback={<SectionFallback />}>
+        <ScrollReveal animation="fade">
+          <HistoryBanner />
+        </ScrollReveal>
+      </Suspense>
 
       <SectionDivider variant="gold" />
 
-      <ScrollReveal animation="fade-up">
-        <PlacesSection />
-      </ScrollReveal>
+      <Suspense fallback={<SectionFallback />}>
+        <ScrollReveal animation="fade-up">
+          <PlacesSection />
+        </ScrollReveal>
+      </Suspense>
 
       <SectionDivider />
 
-      <ScrollReveal animation="fade-up" delay={0.1}>
-        <RestaurantsPreview />
-      </ScrollReveal>
+      <Suspense fallback={<SectionFallback />}>
+        <ScrollReveal animation="fade-up" delay={0.1}>
+          <RestaurantsPreview />
+        </ScrollReveal>
+      </Suspense>
 
-      <ScrollReveal animation="fade-right" duration={0.8}>
-        <SchoolBanner />
-      </ScrollReveal>
+      <Suspense fallback={<SectionFallback />}>
+        <ScrollReveal animation="fade-right" duration={0.8}>
+          <SchoolBanner />
+        </ScrollReveal>
+      </Suspense>
 
       <MarqueeBanner />
 
-      <ScrollReveal animation="fade-up">
-        <InstagramSection />
-      </ScrollReveal>
+      <Suspense fallback={<SectionFallback />}>
+        <ScrollReveal animation="fade-up">
+          <InstagramSection />
+        </ScrollReveal>
+      </Suspense>
 
       <SectionDivider variant="gold" />
 
-      <ScrollReveal animation="fade-up">
-        <FAQSection />
-      </ScrollReveal>
+      <Suspense fallback={<SectionFallback />}>
+        <ScrollReveal animation="fade-up">
+          <FAQSection />
+        </ScrollReveal>
+      </Suspense>
 
-      <PartnersSection />
+      <Suspense fallback={<SectionFallback />}>
+        <PartnersSection />
+      </Suspense>
 
-      <ScrollReveal animation="fade-up">
-        <CTABanner />
-      </ScrollReveal>
+      <Suspense fallback={<SectionFallback />}>
+        <ScrollReveal animation="fade-up">
+          <CTABanner />
+        </ScrollReveal>
+      </Suspense>
 
       <Footer />
     </div>
