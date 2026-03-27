@@ -18,6 +18,7 @@ import MarqueeBanner from "@/components/MarqueeBanner";
 import Footer from "@/components/Footer";
 import ScrollReveal from "@/components/ScrollReveal";
 import DarkModeParticles from "@/components/DarkModeParticles";
+import LatestArticles from "@/components/LatestArticles";
 
 const Index = () => {
   return (
