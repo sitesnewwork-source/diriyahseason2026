@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import ParallaxHero from "@/components/ParallaxHero";
 import { Link } from "react-router-dom";
 import { ChevronLeft, MapPin, Calendar, Users, Award } from "lucide-react";
 import Header from "@/components/Header";
@@ -31,9 +32,7 @@ const About = () => {
       </div>
 
       {/* Hero */}
-      <section className="relative h-[40vh] md:h-[50vh] min-h-[300px] overflow-hidden">
-        <img src={introImg} alt="الدرعية" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent dark:from-black/80" />
+      <ParallaxHero image={introImg} alt="الدرعية" height="h-[40vh] md:h-[50vh]">
         <div className="absolute bottom-0 left-0 right-0 z-10">
           <div className="container mx-auto px-6 pb-8 md:pb-12">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
