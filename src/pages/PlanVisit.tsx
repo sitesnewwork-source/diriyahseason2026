@@ -78,7 +78,7 @@ const PlanVisit = () => {
             </motion.div>
           </div>
         </div>
-      </section>
+      </ParallaxHero>
 
       <section className="py-14 md:py-20">
         <div className="container mx-auto px-6">

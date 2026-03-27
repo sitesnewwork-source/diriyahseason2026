@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import ParallaxHero from "@/components/ParallaxHero";
 import { Clock, MapPin, Check, Lightbulb, ChevronLeft, ChevronRight, Star, ArrowRight, ArrowLeft, X, Images } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -51,9 +52,7 @@ const PlaceDetail = () => {
         <BackButton />
       </div>
 
-      <section className="relative h-[45vh] sm:h-[55vh] md:h-[65vh] min-h-[300px]">
-        <img src={place.detailImage} alt={t(place.name, place.nameEn) as string} className="absolute inset-0 w-full h-full object-cover" width={1920} height={900} />
-        <div className="absolute inset-0 bg-gradient-to-t from-earth/80 via-earth/30 to-earth/10" />
+      <ParallaxHero image={place.detailImage} alt={t(place.name, place.nameEn) as string} overlayClassName="bg-gradient-to-t from-earth/80 via-earth/30 to-earth/10">
         <div className="absolute top-20 sm:top-28 right-0 left-0 z-10">
           <div className="container mx-auto px-4 sm:px-6">
             <div className="flex items-center gap-2 text-cream/60 text-xs sm:text-sm">
