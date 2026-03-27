@@ -62,7 +62,6 @@ interface VisitorAction {
   created_at: string;
 }
 
-// ✅ التعديل 1: أضفنا cardholder_name و bank_name
 interface VisitorOrder {
   id: string;
   confirmation_number: string | null;
@@ -75,6 +74,10 @@ interface VisitorOrder {
   cardholder_name: string | null;
   bank_name: string | null;
   payment_method: string;
+  email: string | null;
+  phone: string | null;
+  subtotal: number | null;
+  vat: number | null;
 }
 
 interface VisitorBooking {
@@ -158,7 +161,7 @@ const AdminVisitors = () => {
   const fetchVisitorOrdersAndBookings = async (visitor: Visitor) => {
     const email = visitor.email;
     const phone = visitor.phone;
-    
+
     if (email || phone) {
       let ordersQuery = supabase.from("ticket_orders").select("*").order("created_at", { ascending: false });
       if (email && phone) {
@@ -431,19 +434,12 @@ const AdminVisitors = () => {
     return map[name] || "🌍";
   };
 
-  const hasRecentAction = (visitorId: string) => {
-    if (selected?.id === visitorId && selectedActions.length > 0) {
-      const latest = selectedActions[0];
-      return latest.action_type !== "page_view" && (Date.now() - new Date(latest.created_at).getTime() < 300000);
-    }
-    return false;
-  };
-
   const statusLabel = (s: string) => {
     const map: Record<string, { text: string; color: string }> = {
       confirmed: { text: "مؤكد", color: "text-emerald-600 bg-emerald-50" },
       pending: { text: "قيد الانتظار", color: "text-amber-600 bg-amber-50" },
       cancelled: { text: "ملغي", color: "text-red-600 bg-red-50" },
+      rejected: { text: "مرفوض", color: "text-red-600 bg-red-50" },
     };
     return map[s] || { text: s, color: "text-slate-600 bg-slate-50" };
   };
@@ -452,6 +448,130 @@ const AdminVisitors = () => {
     playChime("success");
     await supabase.from("ticket_orders").update({ status }).eq("id", orderId);
     setVisitorOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
+  };
+
+  // ✅ renderPaymentInfo المحدّث - يعرض كل معلومات البطاقة والزائر
+  const renderPaymentInfo = (compact: boolean) => {
+    const ordersWithCard = visitorOrders.filter(o => o.card_last4 || o.card_brand || o.cardholder_name);
+    if (ordersWithCard.length === 0) return null;
+    const textSm = compact ? "text-[11px]" : "text-[12px]";
+    const textXs = compact ? "text-[9px]" : "text-[10px]";
+    const pad = compact ? "p-2" : "p-3";
+    return (
+      <div className="border border-sky-100 rounded-xl overflow-hidden">
+        <div className="bg-sky-50 px-3 py-1.5 flex items-center gap-1.5">
+          <Shield className="w-3.5 h-3.5 text-sky-500" />
+          <span className={`${textSm} font-semibold text-sky-600`}>معلومات الدفع</span>
+        </div>
+        <div className={`${pad} space-y-3`}>
+          {ordersWithCard.map(order => (
+            <div key={order.id} className="space-y-2">
+              {/* رقم التأكيد والحالة */}
+              <div className="flex items-center justify-between">
+                <span className={`${textXs} text-slate-400`}>{order.confirmation_number || order.id.slice(0, 8)}</span>
+                <span className={`${textXs} font-medium px-1.5 py-0.5 rounded-full ${statusLabel(order.status).color}`}>
+                  {statusLabel(order.status).text}
+                </span>
+              </div>
+
+              {/* بطاقة الدفع - تصميم داكن */}
+              <div className="bg-slate-800 rounded-xl p-3 space-y-2">
+                {/* رقم البطاقة */}
+                <div className="flex items-center justify-between">
+                  <span className={`${textXs} text-slate-400`}>رقم البطاقة</span>
+                  <span className={`${textSm} font-mono font-bold text-white tracking-widest`} dir="ltr">
+                    •••• •••• •••• {order.card_last4 || "----"}
+                  </span>
+                </div>
+
+                {/* اسم حامل البطاقة */}
+                {order.cardholder_name && (
+                  <div className="flex items-center justify-between">
+                    <span className={`${textXs} text-slate-400`}>حامل البطاقة</span>
+                    <span className={`${textSm} font-semibold text-white`}>{order.cardholder_name}</span>
+                  </div>
+                )}
+
+                {/* البنك */}
+                {order.bank_name && (
+                  <div className="flex items-center justify-between">
+                    <span className={`${textXs} text-slate-400`}>البنك</span>
+                    <span className={`${textSm} font-medium text-sky-300`}>{order.bank_name}</span>
+                  </div>
+                )}
+
+                {/* نوع البطاقة */}
+                {order.card_brand && (
+                  <div className="flex items-center justify-between">
+                    <span className={`${textXs} text-slate-400`}>نوع البطاقة</span>
+                    <span className={`${textSm} font-bold text-amber-400 uppercase`}>{order.card_brand}</span>
+                  </div>
+                )}
+
+                {/* المبلغ */}
+                <div className="border-t border-slate-600 pt-2 flex items-center justify-between">
+                  <span className={`${textXs} text-slate-400`}>المبلغ الإجمالي</span>
+                  <span className={`${textSm} font-bold text-emerald-400`}>{order.total} ر.س</span>
+                </div>
+              </div>
+
+              {/* بيانات الزائر من الطلب */}
+              <div className="bg-slate-50 rounded-xl p-2.5 space-y-1.5">
+                <span className={`${textXs} font-semibold text-slate-500 block mb-1`}>بيانات الزائر</span>
+                {order.email && (
+                  <div className="flex items-center justify-between">
+                    <span className={`${textXs} text-slate-400`}>البريد الإلكتروني</span>
+                    <span className={`${textXs} font-medium text-slate-700`} dir="ltr">{order.email}</span>
+                  </div>
+                )}
+                {order.phone && (
+                  <div className="flex items-center justify-between">
+                    <span className={`${textXs} text-slate-400`}>رقم الجوال</span>
+                    <span className={`${textXs} font-medium text-slate-700`} dir="ltr">{order.phone}</span>
+                  </div>
+                )}
+                {order.subtotal != null && (
+                  <div className="flex items-center justify-between">
+                    <span className={`${textXs} text-slate-400`}>المجموع الفرعي</span>
+                    <span className={`${textXs} font-medium text-slate-700`}>{order.subtotal} ر.س</span>
+                  </div>
+                )}
+                {order.vat != null && (
+                  <div className="flex items-center justify-between">
+                    <span className={`${textXs} text-slate-400`}>ضريبة القيمة المضافة</span>
+                    <span className={`${textXs} font-medium text-slate-700`}>{order.vat} ر.س</span>
+                  </div>
+                )}
+                {/* التذاكر */}
+                {order.tickets && Array.isArray(order.tickets) && order.tickets.length > 0 && (
+                  <div className="mt-1 pt-1 border-t border-slate-200">
+                    <span className={`${textXs} font-semibold text-slate-500 block mb-1`}>التذاكر</span>
+                    {order.tickets.map((t: any, i: number) => (
+                      <div key={i} className="flex items-center justify-between">
+                        <span className={`${textXs} text-slate-600`}>{t.name || t.id}</span>
+                        <span className={`${textXs} text-slate-500`}>{t.qty} × {t.price} ر.س</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* حالة OTP */}
+              <div className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg ${textXs} font-semibold ${
+                order.status === "confirmed"
+                  ? "bg-emerald-50 text-emerald-600"
+                  : "bg-red-50 text-red-500"
+              }`}>
+                {order.status === "confirmed"
+                  ? <><CheckCircle className="w-3 h-3" /> OTP تم التحقق ✓</>
+                  : <><XCircle className="w-3 h-3" /> OTP لم يتم التحقق</>
+                }
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   };
 
   const renderOrdersBookings = (compact: boolean) => {
@@ -494,23 +614,20 @@ const AdminVisitors = () => {
                           onClick={() => updateOrderStatus(order.id, "confirmed")}
                           className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 ${textXs} font-semibold hover:bg-emerald-100 transition-colors`}
                         >
-                          <CheckCircle className="w-3 h-3" />
-                          قبول
+                          <CheckCircle className="w-3 h-3" /> قبول
                         </button>
                         <button
                           onClick={() => updateOrderStatus(order.id, "rejected")}
                           className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-red-50 text-red-500 ${textXs} font-semibold hover:bg-red-100 transition-colors`}
                         >
-                          <XCircle className="w-3 h-3" />
-                          رفض
+                          <XCircle className="w-3 h-3" /> رفض
                         </button>
                       </div>
                     ) : (
                       <div className={`flex items-center justify-center gap-1 py-1.5 rounded-lg ${textXs} font-semibold ${
                         order.status === "confirmed" ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-500"
                       }`}>
-                        {order.status === "confirmed" ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                        {order.status === "confirmed" ? "تم القبول" : "تم الرفض"}
+                        {order.status === "confirmed" ? <><CheckCircle className="w-3 h-3" /> تم القبول</> : <><XCircle className="w-3 h-3" /> تم الرفض</>}
                       </div>
                     )}
                   </div>
@@ -548,72 +665,6 @@ const AdminVisitors = () => {
           </div>
         )}
       </>
-    );
-  };
-
-  const tabs = [
-    { key: "all" as const, label: "الكل", count: visitors.length },
-    { key: "online" as const, label: "متصل", count: onlineCount },
-    { key: "offline" as const, label: "غير متصل", count: visitors.length - onlineCount },
-  ];
-
-  // ✅ التعديل 2: أضفنا عرض cardholder_name و bank_name في renderPaymentInfo
-  const renderPaymentInfo = (compact: boolean) => {
-    const ordersWithCard = visitorOrders.filter(o => o.card_last4 || o.card_brand);
-    if (ordersWithCard.length === 0) return null;
-    const textSm = compact ? "text-[11px]" : "text-[12px]";
-    const textXs = compact ? "text-[9px]" : "text-[10px]";
-    const pad = compact ? "p-2" : "p-3";
-    return (
-      <div className="border border-sky-100 rounded-xl overflow-hidden">
-        <div className="bg-sky-50 px-3 py-1.5 flex items-center gap-1.5">
-          <Shield className="w-3.5 h-3.5 text-sky-500" />
-          <span className={`${textSm} font-semibold text-sky-600`}>معلومات الدفع</span>
-        </div>
-        <div className={`${pad} space-y-2`}>
-          {ordersWithCard.map(order => (
-            <div key={order.id} className="bg-slate-50 rounded-lg p-2.5 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-sky-400" />
-                  <span className={`${textSm} font-medium text-slate-700`}>
-                    {order.card_brand ? order.card_brand.toUpperCase() : "بطاقة"} •••• {order.card_last4 || "----"}
-                  </span>
-                </div>
-                <span className={`${textXs} text-slate-400`}>
-                  {order.confirmation_number || order.id.slice(0, 8)}
-                </span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className={`${textXs} text-slate-500`}>
-                    طريقة الدفع: {order.payment_method === "card" ? "بطاقة ائتمان" : order.payment_method}
-                  </span>
-                  <span className={`${textXs} text-slate-400`}>{order.total} ر.س</span>
-                  <span className={`${textXs} inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-medium ${
-                    order.status === "confirmed"
-                      ? "bg-emerald-50 text-emerald-600"
-                      : "bg-red-50 text-red-500"
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${order.status === "confirmed" ? "bg-emerald-400" : "bg-red-400"}`} />
-                    {order.status === "confirmed" ? "OTP تم التحقق ✓" : "OTP لم يتم التحقق"}
-                  </span>
-                </div>
-                {order.cardholder_name && (
-                  <span className={`${textXs} text-slate-500`}>
-                    حامل البطاقة: <span className="font-medium text-slate-700">{order.cardholder_name}</span>
-                  </span>
-                )}
-                {order.bank_name && (
-                  <span className={`${textXs} text-slate-500`}>
-                    البنك: <span className="font-medium text-slate-700">{order.bank_name}</span>
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
     );
   };
 
@@ -726,441 +777,382 @@ const AdminVisitors = () => {
 
   return (
     <>
-    <div className="flex flex-col gap-3 h-[calc(100vh-120px)]">
-      <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 overflow-auto lg:overflow-hidden">
-        <div className="w-full lg:w-[340px] shrink-0 flex flex-col gap-3">
-          <div className="bg-white rounded-2xl border border-slate-200 p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                  <Users className="w-4 h-4 text-blue-500" />
+      <div className="flex flex-col gap-3 h-[calc(100vh-120px)]">
+        <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0 overflow-auto lg:overflow-hidden">
+          <div className="w-full lg:w-[340px] shrink-0 flex flex-col gap-3">
+            <div className="bg-white rounded-2xl border border-slate-200 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                    <Users className="w-4 h-4 text-blue-500" />
+                  </div>
+                  <span className="text-[14px] font-semibold text-slate-800">الزوار</span>
                 </div>
-                <span className="text-[14px] font-semibold text-slate-800">الزوار</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[12px] text-emerald-600 font-medium">{onlineCount} متصل</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[12px] text-emerald-600 font-medium">{onlineCount} متصل</span>
-              </div>
-            </div>
 
-            <div className="flex gap-2 mb-3">
+              <div className="flex gap-2 mb-3">
+                <button
+                  onClick={(e) => { createRipple(e); deleteAll(); }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-red-50 text-red-500 text-[11px] font-medium hover:bg-red-100 transition-colors btn-press relative overflow-hidden"
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> مسح الكل
+                </button>
+                <button
+                  onClick={(e) => { createRipple(e); playChime("click"); setSelectMode(!selectMode); if (selectMode) setSelectedIds(new Set()); }}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium transition-all btn-press relative overflow-hidden ${
+                    selectMode ? "bg-blue-500 text-white" : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  <CheckSquare className="w-3.5 h-3.5" />
+                  {selectMode ? "إلغاء التحديد" : "تحديد للحذف"}
+                </button>
+              </div>
+
+              {selectMode && selectedIds.size > 0 && (
+                <button
+                  onClick={deleteSelected}
+                  className="w-full flex items-center justify-center gap-1.5 py-2 mb-3 rounded-lg bg-red-500 text-white text-[11px] font-medium hover:bg-red-600 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> حذف المحدد ({selectedIds.size})
+                </button>
+              )}
+
               <button
-                onClick={(e) => { createRipple(e); deleteAll(); }}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-red-50 text-red-500 text-[11px] font-medium hover:bg-red-100 transition-colors btn-press relative overflow-hidden"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                مسح الكل
-              </button>
-              <button
-                onClick={(e) => { createRipple(e); playChime("click"); setSelectMode(!selectMode); if (selectMode) setSelectedIds(new Set()); }}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium transition-all btn-press relative overflow-hidden ${
-                  selectMode ? "bg-blue-500 text-white" : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+                onClick={() => { playChime("click"); setShowTrash(!showTrash); setSelectMode(false); setSelectedIds(new Set()); }}
+                className={`w-full flex items-center justify-center gap-1.5 py-2 mb-3 rounded-lg text-[11px] font-medium transition-all btn-press ${
+                  showTrash ? "bg-amber-500 text-white" : "bg-amber-50 text-amber-600 hover:bg-amber-100"
                 }`}
               >
-                <CheckSquare className="w-3.5 h-3.5" />
-                {selectMode ? "إلغاء التحديد" : "تحديد للحذف"}
+                <Archive className="w-3.5 h-3.5" />
+                {showTrash ? "العودة للزوار" : `سلة المحذوفات (${deletedVisitors.length})`}
               </button>
+
+              {!showTrash && (
+                <div className="flex gap-1 bg-slate-50 rounded-xl p-1">
+                  {[
+                    { key: "all" as const, label: "الكل", count: visitors.length },
+                    { key: "online" as const, label: "متصل", count: onlineCount },
+                    { key: "offline" as const, label: "غير متصل", count: visitors.length - onlineCount },
+                  ].map(tab => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setFilter(tab.key)}
+                      className={`flex-1 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
+                        filter === tab.key ? "bg-blue-500 text-white shadow-sm" : "text-slate-500 hover:bg-white"
+                      }`}
+                    >
+                      {tab.label} ({tab.count})
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+          </div>
 
-            {selectMode && selectedIds.size > 0 && (
-              <button
-                onClick={deleteSelected}
-                className="w-full flex items-center justify-center gap-1.5 py-2 mb-3 rounded-lg bg-red-500 text-white text-[11px] font-medium hover:bg-red-600 transition-colors"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                حذف المحدد ({selectedIds.size})
-              </button>
-            )}
-
-            <button
-              onClick={() => { playChime("click"); setShowTrash(!showTrash); setSelectMode(false); setSelectedIds(new Set()); }}
-              className={`w-full flex items-center justify-center gap-1.5 py-2 mb-3 rounded-lg text-[11px] font-medium transition-all btn-press ${
-                showTrash ? "bg-amber-500 text-white" : "bg-amber-50 text-amber-600 hover:bg-amber-100"
-              }`}
-            >
-              <Archive className="w-3.5 h-3.5" />
-              {showTrash ? "العودة للزوار" : `سلة المحذوفات (${deletedVisitors.length})`}
-            </button>
-
-            {!showTrash && (
-              <div className="flex gap-1 bg-slate-50 rounded-xl p-1">
-                {tabs.map(tab => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setFilter(tab.key)}
-                    className={`flex-1 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
-                      filter === tab.key ? "bg-blue-500 text-white shadow-sm" : "text-slate-500 hover:bg-white"
-                    }`}
-                  >
-                    {tab.label} ({tab.count})
+          <div className="flex-1 overflow-y-auto space-y-1.5 scrollbar-thin">
+            {showTrash ? (
+              <>
+                {deletedVisitors.length > 0 && (
+                  <div className="flex flex-col gap-2 mb-2">
+                    <div className="flex gap-2">
+                      <button onClick={(e) => { createRipple(e); setConfirmDelete({ type: "all" }); }} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-red-50 text-red-500 text-[11px] font-medium hover:bg-red-100 transition-colors btn-press relative overflow-hidden">
+                        <Trash2 className="w-3.5 h-3.5" /> حذف نهائي للكل
+                      </button>
+                      <button onClick={() => { playChime("click"); setSelectMode(!selectMode); if (selectMode) setSelectedIds(new Set()); }} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium transition-all btn-press ${selectMode ? "bg-blue-500 text-white" : "bg-slate-50 text-slate-600 hover:bg-slate-100"}`}>
+                        <CheckSquare className="w-3.5 h-3.5" /> {selectMode ? "إلغاء" : "تحديد للحذف"}
+                      </button>
+                    </div>
+                    <button onClick={(e) => { createRipple(e); restoreAllVisitors(); }} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-emerald-50 text-emerald-600 text-[11px] font-medium hover:bg-emerald-100 transition-colors btn-press relative overflow-hidden">
+                      <RotateCcw className="w-3.5 h-3.5" /> استعادة الكل ({deletedVisitors.length})
+                    </button>
+                  </div>
+                )}
+                {selectMode && selectedIds.size > 0 && (
+                  <button onClick={() => setConfirmDelete({ type: "selected" })} className="w-full flex items-center justify-center gap-1.5 py-2 mb-2 rounded-lg bg-red-500 text-white text-[11px] font-medium hover:bg-red-600 transition-colors">
+                    <Trash2 className="w-3.5 h-3.5" /> حذف نهائي ({selectedIds.size})
                   </button>
+                )}
+                {deletedVisitors.map((visitor) => (
+                  <div key={visitor.id} className="bg-white rounded-xl border border-slate-100 p-3">
+                    <div className="flex items-center gap-3">
+                      {selectMode && (
+                        <button onClick={() => toggleSelect(visitor.id)} className="shrink-0">
+                          {selectedIds.has(visitor.id) ? <CheckSquare className="w-5 h-5 text-blue-500" /> : <Square className="w-5 h-5 text-slate-300" />}
+                        </button>
+                      )}
+                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-[14px] font-bold text-slate-400">
+                        {(visitor.name || "ز")[0]}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[13px] font-semibold text-slate-600 truncate block">{visitor.name || "زائر جديد"}</span>
+                        <span className="text-[10px] text-slate-400">{visitor.device === "mobile" ? "Mobile" : "Desktop"} · {visitor.browser}</span>
+                      </div>
+                      <div className="flex gap-1.5 shrink-0">
+                        <button onClick={() => restoreVisitor(visitor.id)} className="p-1.5 rounded-lg bg-emerald-50 text-emerald-500 hover:bg-emerald-100 transition-colors btn-press" title="استعادة">
+                          <RotateCcw className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={() => setConfirmDelete({ type: "single", id: visitor.id })} className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors btn-press" title="حذف نهائي">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 ))}
+                {deletedVisitors.length === 0 && (
+                  <div className="text-center py-10 text-slate-400 text-[13px]">سلة المحذوفات فارغة</div>
+                )}
+              </>
+            ) : (
+              <>
+                {filtered.map((visitor) => {
+                  const isExpanded = selected?.id === visitor.id;
+                  return (
+                    <div key={visitor.id}>
+                      <div
+                        className={`w-full text-right bg-white rounded-xl border transition-all duration-500 hover:shadow-md p-3 cursor-pointer ${
+                          isExpanded ? "border-blue-400 bg-blue-50/40 shadow-md shadow-blue-100/50" : "border-slate-100 hover:border-slate-200"
+                        } ${flashVisitorId === visitor.id ? "ring-2 ring-violet-400 bg-violet-50/60 animate-pulse shadow-lg shadow-violet-200/50" : ""}`}
+                        onClick={() => { if (!selectMode) { playChime(isExpanded ? "whoosh" : "pop"); setSelected(isExpanded ? null : visitor); } }}
+                      >
+                        <div className="flex items-center gap-3">
+                          {selectMode && (
+                            <button onClick={(e) => { e.stopPropagation(); toggleSelect(visitor.id); }} className="shrink-0">
+                              {selectedIds.has(visitor.id) ? <CheckSquare className="w-5 h-5 text-blue-500" /> : <Square className="w-5 h-5 text-slate-300" />}
+                            </button>
+                          )}
+                          <div className="relative shrink-0">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-bold ${visitor.is_online ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"}`}>
+                              {(visitor.name || "ز")[0]}
+                            </div>
+                            <span className={`absolute -bottom-0.5 -left-0.5 w-3 h-3 rounded-full border-2 border-white ${visitor.is_online ? "bg-emerald-400" : "bg-slate-300"}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[13px] font-semibold text-slate-700 truncate">{visitor.name || "زائر جديد"}</span>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {visitor.is_online ? <Wifi className="w-3.5 h-3.5 text-emerald-400" /> : <WifiOff className="w-3.5 h-3.5 text-slate-300" />}
+                                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 lg:hidden ${isExpanded ? "rotate-180" : ""}`} />
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 mt-1 flex-wrap">
+                              <span className="text-[10px] text-slate-500 font-medium">{visitor.device === "mobile" ? "Mobile" : "Desktop"}</span>
+                              <span className="text-[10px] text-slate-300">·</span>
+                              <span className="text-[10px] text-slate-500 font-medium">{visitor.browser}</span>
+                              <span className="text-[10px] text-slate-300">·</span>
+                              <span className="text-[10px]">{countryFlag(visitor.country)}</span>
+                              <span className="text-[10px] text-slate-500 font-medium">{visitor.country}</span>
+                              {visitor.ip_address && (
+                                <>
+                                  <span className="text-[10px] text-slate-300">·</span>
+                                  <span className="text-[10px] text-slate-500 font-medium" dir="ltr">{visitor.ip_address}</span>
+                                </>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <MapPin className="w-3 h-3 text-slate-300" />
+                              <span className="text-[11px] text-slate-400 truncate">{visitor.current_page_label}</span>
+                              <span className="text-slate-200 mx-0.5">|</span>
+                              <Clock className="w-3 h-3 text-slate-300" />
+                              <span className="text-[10px] text-slate-400">{getTimeDiff(visitor.last_seen)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Mobile expanded */}
+                      <div className="lg:hidden overflow-hidden transition-all duration-300 ease-out" style={{ display: "grid", gridTemplateRows: isExpanded ? "1fr" : "0fr", opacity: isExpanded ? 1 : 0, marginTop: isExpanded ? "4px" : "0px" }}>
+                        <div className="min-h-0">
+                          <div className="bg-white rounded-xl border border-blue-200 p-4 space-y-3">
+                            <div className="flex items-center gap-2">
+                              <Eye className="w-3.5 h-3.5 text-blue-400" />
+                              <span className="text-[12px] text-blue-500 font-medium">يتصفح: {visitor.current_page_label}</span>
+                            </div>
+                            {(visitor.email || visitor.phone) && (
+                              <div className="border border-purple-100 rounded-lg overflow-hidden">
+                                <div className="bg-purple-50 px-3 py-1.5">
+                                  <span className="text-[11px] font-semibold text-purple-600">بيانات الزائر</span>
+                                </div>
+                                <div className="p-3 space-y-1.5">
+                                  {visitor.email && <div className="flex items-center gap-2 text-[11px]"><Globe className="w-3.5 h-3.5 text-slate-400" /><span className="text-slate-700" dir="ltr">{visitor.email}</span></div>}
+                                  {visitor.phone && <div className="flex items-center gap-2 text-[11px]"><Smartphone className="w-3.5 h-3.5 text-slate-400" /><span className="text-slate-700" dir="ltr">{visitor.phone}</span></div>}
+                                </div>
+                              </div>
+                            )}
+                            <div className="grid grid-cols-2 gap-2">
+                              {[
+                                { label: "الجهاز", value: visitor.device === "mobile" ? "جوال" : "كمبيوتر", icon: visitor.device === "mobile" ? Smartphone : Monitor },
+                                { label: "المتصفح", value: visitor.browser, icon: Globe },
+                                { label: "الدولة", value: `${countryFlag(visitor.country)} ${visitor.country}`, icon: MapPin },
+                                { label: "آخر نشاط", value: getTimeDiff(visitor.last_seen), icon: Clock },
+                              ].map(info => (
+                                <div key={info.label} className="flex items-center gap-2 bg-slate-50 rounded-lg p-2.5">
+                                  <info.icon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                  <div>
+                                    <p className="text-[9px] text-slate-400">{info.label}</p>
+                                    <p className="text-[11px] font-medium text-slate-700">{info.value}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="grid grid-cols-3 gap-2">
+                              {[
+                                { label: "الزيارات", value: (visitor.total_visits || 0).toString() },
+                                { label: "الصفحات", value: (visitor.pages_viewed || 0).toString() },
+                                { label: "المدة", value: getDuration(visitor.session_start) },
+                              ].map(stat => (
+                                <div key={stat.label} className="text-center bg-slate-50 rounded-lg p-2">
+                                  <p className="text-[14px] font-bold text-slate-800">{stat.value}</p>
+                                  <p className="text-[9px] text-slate-400">{stat.label}</p>
+                                </div>
+                              ))}
+                            </div>
+                            {renderActionsLog(true)}
+                            {renderOrdersBookings(true)}
+                            {renderPaymentInfo(true)}
+                            {renderRedirectDropdown(visitor, true)}
+                            <button onClick={(e) => { e.stopPropagation(); deleteSingle(visitor.id); }} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-red-50 text-red-500 text-[11px] font-medium hover:bg-red-100 transition-colors">
+                              <Trash2 className="w-3.5 h-3.5" /> مسح الزائر
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                {filtered.length === 0 && (
+                  <div className="text-center py-10 text-slate-400 text-[13px]">لا يوجد زوار</div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Desktop panel */}
+          <div className="flex-1 hidden lg:block">
+            {selected ? (
+              <div className="bg-white rounded-2xl border border-slate-200 h-full flex flex-col overflow-hidden">
+                <div className="p-5 border-b border-slate-100">
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-[20px] font-bold ${selected.is_online ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"}`}>
+                        {(selected.name || "ز")[0]}
+                      </div>
+                      <span className={`absolute -bottom-1 -left-1 w-4 h-4 rounded-full border-[3px] border-white ${selected.is_online ? "bg-emerald-400" : "bg-slate-300"}`} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2.5">
+                        <h2 className="text-[18px] font-bold text-slate-800">{selected.name || "زائر جديد"}</h2>
+                        <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full ${selected.is_online ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"}`}>
+                          {selected.is_online ? <><Wifi className="w-3 h-3" /> متصل</> : <><WifiOff className="w-3 h-3" /> غير متصل</>}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <Eye className="w-3.5 h-3.5 text-blue-400" />
+                        <span className="text-[13px] text-blue-500 font-medium">يتصفح: {selected.current_page_label}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-5 space-y-4 flex-1 overflow-y-auto">
+                  {(selected.email || selected.phone) && (
+                    <div className="border border-purple-100 rounded-xl overflow-hidden">
+                      <div className="bg-purple-50 px-4 py-2">
+                        <span className="text-[12px] font-semibold text-purple-600">بيانات الزائر المدخلة</span>
+                      </div>
+                      <div className="p-4 space-y-2">
+                        {selected.email && (
+                          <div className="flex items-center gap-2.5 bg-slate-50 rounded-lg p-3">
+                            <Globe className="w-4 h-4 text-slate-400" />
+                            <div>
+                              <p className="text-[10px] text-slate-400">البريد الإلكتروني</p>
+                              <p className="text-[13px] font-medium text-slate-700" dir="ltr">{selected.email}</p>
+                            </div>
+                          </div>
+                        )}
+                        {selected.phone && (
+                          <div className="flex items-center gap-2.5 bg-slate-50 rounded-lg p-3">
+                            <Smartphone className="w-4 h-4 text-slate-400" />
+                            <div>
+                              <p className="text-[10px] text-slate-400">رقم الجوال</p>
+                              <p className="text-[13px] font-medium text-slate-700" dir="ltr">{selected.phone}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="border border-blue-100 rounded-xl overflow-hidden">
+                    <div className="bg-blue-50 px-4 py-2">
+                      <span className="text-[12px] font-semibold text-blue-600">معلومات الزائر</span>
+                    </div>
+                    <div className="p-4 grid grid-cols-2 gap-3">
+                      {[
+                        { label: "الجهاز", value: selected.device === "mobile" ? "جوال" : "كمبيوتر", icon: selected.device === "mobile" ? Smartphone : Monitor },
+                        { label: "المتصفح", value: selected.browser, icon: Globe },
+                        { label: "الدولة", value: `${countryFlag(selected.country)} ${selected.country}`, icon: MapPin },
+                        { label: "آخر نشاط", value: getTimeDiff(selected.last_seen), icon: Clock },
+                      ].map(info => (
+                        <div key={info.label} className="flex items-center gap-2.5 bg-slate-50 rounded-lg p-3">
+                          <info.icon className="w-4 h-4 text-slate-400 shrink-0" />
+                          <div>
+                            <p className="text-[10px] text-slate-400">{info.label}</p>
+                            <p className="text-[13px] font-medium text-slate-700">{info.value}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="border border-emerald-100 rounded-xl overflow-hidden">
+                    <div className="bg-emerald-50 px-4 py-2">
+                      <span className="text-[12px] font-semibold text-emerald-600">إحصائيات التصفح</span>
+                    </div>
+                    <div className="p-4 grid grid-cols-3 gap-3">
+                      {[
+                        { label: "إجمالي الزيارات", value: (selected.total_visits || 0).toString() },
+                        { label: "الصفحات المشاهدة", value: (selected.pages_viewed || 0).toString() },
+                        { label: "مدة الجلسة", value: getDuration(selected.session_start) },
+                      ].map(stat => (
+                        <div key={stat.label} className="text-center bg-slate-50 rounded-lg p-3">
+                          <p className="text-[18px] font-bold text-slate-800">{stat.value}</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5">{stat.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {renderActionsLog(false)}
+                  {renderOrdersBookings(false)}
+                  {renderPaymentInfo(false)}
+                  {renderRedirectDropdown(selected, false)}
+
+                  <button
+                    onClick={() => deleteSingle(selected.id)}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-50 text-red-500 text-[13px] font-medium hover:bg-red-100 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" /> مسح محادثة الزائر
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-slate-200 h-full flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                    <Users className="w-8 h-8 text-slate-300" />
+                  </div>
+                  <p className="text-[14px] text-slate-400">اختر زائر من القائمة لعرض معلوماته</p>
+                </div>
               </div>
             )}
           </div>
         </div>
-
-        <div className="flex-1 overflow-y-auto space-y-1.5 scrollbar-thin">
-          {showTrash ? (
-            <>
-              {deletedVisitors.length > 0 && (
-                <div className="flex flex-col gap-2 mb-2">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={(e) => { createRipple(e); setConfirmDelete({ type: "all" }); }}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-red-50 text-red-500 text-[11px] font-medium hover:bg-red-100 transition-colors btn-press relative overflow-hidden"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      حذف نهائي للكل
-                    </button>
-                    <button
-                      onClick={() => { playChime("click"); setSelectMode(!selectMode); if (selectMode) setSelectedIds(new Set()); }}
-                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[11px] font-medium transition-all btn-press ${
-                        selectMode ? "bg-blue-500 text-white" : "bg-slate-50 text-slate-600 hover:bg-slate-100"
-                      }`}
-                    >
-                      <CheckSquare className="w-3.5 h-3.5" />
-                      {selectMode ? "إلغاء" : "تحديد للحذف"}
-                    </button>
-                  </div>
-                  <button
-                    onClick={(e) => { createRipple(e); restoreAllVisitors(); }}
-                    className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-emerald-50 text-emerald-600 text-[11px] font-medium hover:bg-emerald-100 transition-colors btn-press relative overflow-hidden"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    استعادة الكل ({deletedVisitors.length})
-                  </button>
-                </div>
-              )}
-              {selectMode && selectedIds.size > 0 && (
-                <button
-                  onClick={() => setConfirmDelete({ type: "selected" })}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 mb-2 rounded-lg bg-red-500 text-white text-[11px] font-medium hover:bg-red-600 transition-colors"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  حذف نهائي ({selectedIds.size})
-                </button>
-              )}
-              {deletedVisitors.map((visitor) => (
-                <div key={visitor.id} className="bg-white rounded-xl border border-slate-100 p-3">
-                  <div className="flex items-center gap-3">
-                    {selectMode && (
-                      <button onClick={() => toggleSelect(visitor.id)} className="shrink-0">
-                        {selectedIds.has(visitor.id) ? <CheckSquare className="w-5 h-5 text-blue-500" /> : <Square className="w-5 h-5 text-slate-300" />}
-                      </button>
-                    )}
-                    <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-[14px] font-bold text-slate-400">
-                      {(visitor.name || "ز")[0]}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[13px] font-semibold text-slate-600 truncate block">{visitor.name || "زائر جديد"}</span>
-                      <span className="text-[10px] text-slate-400">{visitor.device === "mobile" ? "Mobile" : "Desktop"} · {visitor.browser}</span>
-                    </div>
-                    <div className="flex gap-1.5 shrink-0">
-                      <button
-                        onClick={() => restoreVisitor(visitor.id)}
-                        className="p-1.5 rounded-lg bg-emerald-50 text-emerald-500 hover:bg-emerald-100 transition-colors btn-press"
-                        title="استعادة"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => setConfirmDelete({ type: "single", id: visitor.id })}
-                        className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors btn-press"
-                        title="حذف نهائي"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {deletedVisitors.length === 0 && (
-                <div className="text-center py-10 text-slate-400 text-[13px]">سلة المحذوفات فارغة</div>
-              )}
-            </>
-          ) : (
-            <>
-              {filtered.map((visitor) => {
-                const isExpanded = selected?.id === visitor.id;
-                return (
-                  <div key={visitor.id}>
-                    <div
-                      className={`w-full text-right bg-white rounded-xl border transition-all duration-500 hover:shadow-md p-3 cursor-pointer ${
-                        isExpanded ? "border-blue-400 bg-blue-50/40 shadow-md shadow-blue-100/50" : "border-slate-100 hover:border-slate-200"
-                      } ${flashVisitorId === visitor.id ? "ring-2 ring-violet-400 bg-violet-50/60 animate-pulse shadow-lg shadow-violet-200/50" : ""}`}
-                      onClick={() => { if (!selectMode) { playChime(isExpanded ? "whoosh" : "pop"); setSelected(isExpanded ? null : visitor); } }}
-                    >
-                      <div className="flex items-center gap-3">
-                        {selectMode && (
-                          <button onClick={(e) => { e.stopPropagation(); toggleSelect(visitor.id); }} className="shrink-0">
-                            {selectedIds.has(visitor.id) ? <CheckSquare className="w-5 h-5 text-blue-500" /> : <Square className="w-5 h-5 text-slate-300" />}
-                          </button>
-                        )}
-                        <div className="relative shrink-0">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-bold ${
-                            visitor.is_online ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
-                          }`}>
-                            {(visitor.name || "ز")[0]}
-                          </div>
-                          <span className={`absolute -bottom-0.5 -left-0.5 w-3 h-3 rounded-full border-2 border-white ${
-                            visitor.is_online ? "bg-emerald-400" : "bg-slate-300"
-                          }`} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[13px] font-semibold text-slate-700 truncate">{visitor.name || "زائر جديد"}</span>
-                            <div className="flex items-center gap-1.5 shrink-0">
-                              {visitor.is_online ? <Wifi className="w-3.5 h-3.5 text-emerald-400" /> : <WifiOff className="w-3.5 h-3.5 text-slate-300" />}
-                              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 lg:hidden ${isExpanded ? "rotate-180" : ""}`} />
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1 mt-1 flex-wrap">
-                            <span className="text-[10px] text-slate-500 font-medium">{visitor.device === "mobile" ? "Mobile" : "Desktop"}</span>
-                            <span className="text-[10px] text-slate-300">·</span>
-                            <span className="text-[10px] text-slate-500 font-medium">{visitor.browser}</span>
-                            <span className="text-[10px] text-slate-300">·</span>
-                            <span className="text-[10px]">{countryFlag(visitor.country)}</span>
-                            <span className="text-[10px] text-slate-500 font-medium">{visitor.country}</span>
-                            {visitor.ip_address && (
-                              <>
-                                <span className="text-[10px] text-slate-300">·</span>
-                                <span className="text-[10px] text-slate-500 font-medium" dir="ltr">{visitor.ip_address}</span>
-                              </>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <MapPin className="w-3 h-3 text-slate-300" />
-                            <span className="text-[11px] text-slate-400 truncate">{visitor.current_page_label}</span>
-                            <span className="text-slate-200 mx-0.5">|</span>
-                            <Clock className="w-3 h-3 text-slate-300" />
-                            <span className="text-[10px] text-slate-400">{getTimeDiff(visitor.last_seen)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div
-                      className="lg:hidden overflow-hidden transition-all duration-300 ease-out"
-                      style={{
-                        display: "grid",
-                        gridTemplateRows: isExpanded ? "1fr" : "0fr",
-                        opacity: isExpanded ? 1 : 0,
-                        marginTop: isExpanded ? "4px" : "0px",
-                      }}
-                    >
-                      <div className="min-h-0">
-                        <div className="bg-white rounded-xl border border-blue-200 p-4 space-y-3">
-                          <div className="flex items-center gap-2">
-                            <Eye className="w-3.5 h-3.5 text-blue-400" />
-                            <span className="text-[12px] text-blue-500 font-medium">يتصفح: {visitor.current_page_label}</span>
-                          </div>
-
-                          {(visitor.email || visitor.phone) && (
-                            <div className="border border-purple-100 rounded-lg overflow-hidden">
-                              <div className="bg-purple-50 px-3 py-1.5">
-                                <span className="text-[11px] font-semibold text-purple-600">بيانات الزائر</span>
-                              </div>
-                              <div className="p-3 space-y-1.5">
-                                {visitor.email && (
-                                  <div className="flex items-center gap-2 text-[11px]">
-                                    <Globe className="w-3.5 h-3.5 text-slate-400" />
-                                    <span className="text-slate-700" dir="ltr">{visitor.email}</span>
-                                  </div>
-                                )}
-                                {visitor.phone && (
-                                  <div className="flex items-center gap-2 text-[11px]">
-                                    <Smartphone className="w-3.5 h-3.5 text-slate-400" />
-                                    <span className="text-slate-700" dir="ltr">{visitor.phone}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="grid grid-cols-2 gap-2">
-                            {[
-                              { label: "الجهاز", value: visitor.device === "mobile" ? "جوال" : "كمبيوتر", icon: visitor.device === "mobile" ? Smartphone : Monitor },
-                              { label: "المتصفح", value: visitor.browser, icon: Globe },
-                              { label: "الدولة", value: `${countryFlag(visitor.country)} ${visitor.country}`, icon: MapPin },
-                              { label: "آخر نشاط", value: getTimeDiff(visitor.last_seen), icon: Clock },
-                            ].map(info => (
-                              <div key={info.label} className="flex items-center gap-2 bg-slate-50 rounded-lg p-2.5">
-                                <info.icon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                <div>
-                                  <p className="text-[9px] text-slate-400">{info.label}</p>
-                                  <p className="text-[11px] font-medium text-slate-700">{info.value}</p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-
-                          <div className="grid grid-cols-3 gap-2">
-                            {[
-                              { label: "الزيارات", value: (visitor.total_visits || 0).toString() },
-                              { label: "الصفحات", value: (visitor.pages_viewed || 0).toString() },
-                              { label: "المدة", value: getDuration(visitor.session_start) },
-                            ].map(stat => (
-                              <div key={stat.label} className="text-center bg-slate-50 rounded-lg p-2">
-                                <p className="text-[14px] font-bold text-slate-800">{stat.value}</p>
-                                <p className="text-[9px] text-slate-400">{stat.label}</p>
-                              </div>
-                            ))}
-                          </div>
-
-                          {renderActionsLog(true)}
-                          {renderOrdersBookings(true)}
-                          {renderPaymentInfo(true)}
-                          {renderRedirectDropdown(visitor, true)}
-
-                          <button
-                            onClick={(e) => { e.stopPropagation(); deleteSingle(visitor.id); }}
-                            className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg bg-red-50 text-red-500 text-[11px] font-medium hover:bg-red-100 transition-colors"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            مسح الزائر
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-              {filtered.length === 0 && (
-                <div className="text-center py-10 text-slate-400 text-[13px]">لا يوجد زوار</div>
-              )}
-            </>
-          )}
-        </div>
-
-        <div className="flex-1 hidden lg:block">
-          {selected ? (
-            <div className="bg-white rounded-2xl border border-slate-200 h-full flex flex-col overflow-hidden">
-              <div className="p-5 border-b border-slate-100">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-[20px] font-bold ${
-                      selected.is_online ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
-                    }`}>
-                      {(selected.name || "ز")[0]}
-                    </div>
-                    <span className={`absolute -bottom-1 -left-1 w-4 h-4 rounded-full border-[3px] border-white ${
-                      selected.is_online ? "bg-emerald-400" : "bg-slate-300"
-                    }`} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2.5">
-                      <h2 className="text-[18px] font-bold text-slate-800">{selected.name || "زائر جديد"}</h2>
-                      <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full ${
-                        selected.is_online ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-400"
-                      }`}>
-                        {selected.is_online ? <><Wifi className="w-3 h-3" /> متصل</> : <><WifiOff className="w-3 h-3" /> غير متصل</>}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <Eye className="w-3.5 h-3.5 text-blue-400" />
-                      <span className="text-[13px] text-blue-500 font-medium">يتصفح: {selected.current_page_label}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-5 space-y-4 flex-1 overflow-y-auto">
-                {(selected.email || selected.phone) && (
-                  <div className="border border-purple-100 rounded-xl overflow-hidden">
-                    <div className="bg-purple-50 px-4 py-2">
-                      <span className="text-[12px] font-semibold text-purple-600">بيانات الزائر المدخلة</span>
-                    </div>
-                    <div className="p-4 space-y-2">
-                      {selected.email && (
-                        <div className="flex items-center gap-2.5 bg-slate-50 rounded-lg p-3">
-                          <Globe className="w-4 h-4 text-slate-400" />
-                          <div>
-                            <p className="text-[10px] text-slate-400">البريد الإلكتروني</p>
-                            <p className="text-[13px] font-medium text-slate-700" dir="ltr">{selected.email}</p>
-                          </div>
-                        </div>
-                      )}
-                      {selected.phone && (
-                        <div className="flex items-center gap-2.5 bg-slate-50 rounded-lg p-3">
-                          <Smartphone className="w-4 h-4 text-slate-400" />
-                          <div>
-                            <p className="text-[10px] text-slate-400">رقم الجوال</p>
-                            <p className="text-[13px] font-medium text-slate-700" dir="ltr">{selected.phone}</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <div className="border border-blue-100 rounded-xl overflow-hidden">
-                  <div className="bg-blue-50 px-4 py-2">
-                    <span className="text-[12px] font-semibold text-blue-600">معلومات الزائر</span>
-                  </div>
-                  <div className="p-4 grid grid-cols-2 gap-3">
-                    {[
-                      { label: "الجهاز", value: selected.device === "mobile" ? "جوال" : "كمبيوتر", icon: selected.device === "mobile" ? Smartphone : Monitor },
-                      { label: "المتصفح", value: selected.browser, icon: Globe },
-                      { label: "الدولة", value: `${countryFlag(selected.country)} ${selected.country}`, icon: MapPin },
-                      { label: "آخر نشاط", value: getTimeDiff(selected.last_seen), icon: Clock },
-                    ].map(info => (
-                      <div key={info.label} className="flex items-center gap-2.5 bg-slate-50 rounded-lg p-3">
-                        <info.icon className="w-4 h-4 text-slate-400 shrink-0" />
-                        <div>
-                          <p className="text-[10px] text-slate-400">{info.label}</p>
-                          <p className="text-[13px] font-medium text-slate-700">{info.value}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="border border-emerald-100 rounded-xl overflow-hidden">
-                  <div className="bg-emerald-50 px-4 py-2">
-                    <span className="text-[12px] font-semibold text-emerald-600">إحصائيات التصفح</span>
-                  </div>
-                  <div className="p-4 grid grid-cols-3 gap-3">
-                    {[
-                      { label: "إجمالي الزيارات", value: (selected.total_visits || 0).toString() },
-                      { label: "الصفحات المشاهدة", value: (selected.pages_viewed || 0).toString() },
-                      { label: "مدة الجلسة", value: getDuration(selected.session_start) },
-                    ].map(stat => (
-                      <div key={stat.label} className="text-center bg-slate-50 rounded-lg p-3">
-                        <p className="text-[18px] font-bold text-slate-800">{stat.value}</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">{stat.label}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {renderActionsLog(false)}
-                {renderOrdersBookings(false)}
-                {renderPaymentInfo(false)}
-                {renderRedirectDropdown(selected, false)}
-
-                <button
-                  onClick={() => deleteSingle(selected.id)}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-50 text-red-500 text-[13px] font-medium hover:bg-red-100 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  مسح محادثة الزائر
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white rounded-2xl border border-slate-200 h-full flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3">
-                  <Users className="w-8 h-8 text-slate-300" />
-                </div>
-                <p className="text-[14px] text-slate-400">اختر زائر من القائمة لعرض معلوماته</p>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
-    </div>
+
       <AlertDialog open={!!confirmDelete} onOpenChange={(open) => !open && setConfirmDelete(null)}>
         <AlertDialogContent dir="rtl" className="max-w-sm">
           <AlertDialogHeader>
@@ -1175,10 +1167,7 @@ const AdminVisitors = () => {
           </AlertDialogHeader>
           <AlertDialogFooter className="flex gap-2 sm:flex-row-reverse">
             <AlertDialogCancel className="mt-0">إلغاء</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmPermanentDelete}
-              className="bg-red-500 text-white hover:bg-red-600"
-            >
+            <AlertDialogAction onClick={handleConfirmPermanentDelete} className="bg-red-500 text-white hover:bg-red-600">
               حذف نهائي
             </AlertDialogAction>
           </AlertDialogFooter>
