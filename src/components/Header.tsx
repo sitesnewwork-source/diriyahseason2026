@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronLeft, ChevronDown, Search, BookOpen, Moon, Sun, Globe } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
