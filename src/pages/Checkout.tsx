@@ -32,12 +32,11 @@ const Checkout = () => {
   } | null;
 
   const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [lastName, setLastName]   = useState("");
+  const [email, setEmail]         = useState("");
+  const [phone, setPhone]         = useState("");
+  const [errors, setErrors]       = useState<Record<string, string>>({});
 
-  // Build initial tickets from incoming state or use defaults
   const buildInitialTickets = () => {
     if (bookingState?.tickets && bookingState.tickets.length > 0) {
       return bookingState.tickets.map((t, i) => ({
@@ -52,6 +51,8 @@ const Checkout = () => {
       { id: 2, name: isAr ? "جولة إرشادية - البجيري" : "Guided Tour - Bujairi", price: 75, qty: 1 },
     ];
   };
+
+  const [tickets, setTickets] = useState(buildInitialTickets);
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -75,36 +76,15 @@ const Checkout = () => {
     return Object.keys(e).length === 0;
   };
 
-  const handlePayment = () => {
-    if (!validate()) {
-      toast({
-        title: isAr ? "⚠️ يرجى تعبئة جميع الحقول" : "⚠️ Please fill all fields",
-        description: isAr ? "تحقق من البيانات المطلوبة وحاول مرة أخرى" : "Check the required fields and try again",
-        variant: "destructive",
-      });
-      return;
-    }
-    navigate("/order-confirmation", {
-      state: {
-        tickets,
-        firstName,
-        lastName,
-        email,
-        total,
-        vat,
-        subtotal,
-        paymentMethod: "online",
-      },
-    });
-  };
-
-  const [tickets, setTickets] = useState(buildInitialTickets);
-
   const updateQty = (id: number, delta: number) => {
     setTickets((prev) =>
       prev.map((t) => (t.id === id ? { ...t, qty: Math.max(0, t.qty + delta) } : t)).filter((t) => t.qty > 0)
     );
-    actionNotify({ message: isAr ? (delta > 0 ? "تمت زيادة الكمية" : "تم تقليل الكمية") : (delta > 0 ? "Quantity increased" : "Quantity decreased"), icon: delta > 0 ? "➕" : "➖", sound: "soft" });
+    actionNotify({
+      message: isAr ? (delta > 0 ? "تمت زيادة الكمية" : "تم تقليل الكمية") : (delta > 0 ? "Quantity increased" : "Quantity decreased"),
+      icon: delta > 0 ? "➕" : "➖",
+      sound: "soft",
+    });
   };
 
   const removeTicket = (id: number) => {
@@ -113,8 +93,8 @@ const Checkout = () => {
   };
 
   const subtotal = tickets.reduce((sum, t) => sum + t.price * t.qty, 0);
-  const vat = Math.round(subtotal * 0.15);
-  const total = subtotal + vat;
+  const vat      = Math.round(subtotal * 0.15);
+  const total    = subtotal + vat;
 
   return (
     <div className="min-h-screen bg-background font-body" dir={isAr ? "rtl" : "ltr"}>
@@ -131,8 +111,10 @@ const Checkout = () => {
           </p>
 
           <div className="grid md:grid-cols-5 gap-5 sm:gap-8">
-            {/* Order Summary - Right/Left */}
+
+            {/* Order Summary */}
             <div className="md:col-span-3 space-y-6">
+
               {/* Tickets */}
               <div className="bg-card rounded-xl border border-border p-3 sm:p-5">
                 <div className="flex items-center gap-2 mb-3 sm:mb-4">
@@ -150,7 +132,6 @@ const Checkout = () => {
                   <div className="space-y-3">
                     {tickets.map((ticket) => (
                       <div key={ticket.id} className="p-2.5 sm:p-3 rounded-lg bg-background">
-                        {/* Top row: name + delete */}
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-foreground text-sm leading-tight">{ticket.name}</p>
@@ -161,18 +142,26 @@ const Checkout = () => {
                               <span>2026-04-15</span>
                             </div>
                           </div>
-                          <button onClick={() => removeTicket(ticket.id)} className="text-destructive/60 hover:text-destructive transition-colors p-1 flex-shrink-0">
+                          <button
+                            onClick={() => removeTicket(ticket.id)}
+                            className="text-destructive/60 hover:text-destructive transition-colors p-1 flex-shrink-0"
+                          >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                        {/* Bottom row: qty controls + price */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <button onClick={() => updateQty(ticket.id, -1)} className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors">
+                            <button
+                              onClick={() => updateQty(ticket.id, -1)}
+                              className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
+                            >
                               <Minus className="w-3 h-3" />
                             </button>
                             <span className="w-6 text-center text-sm font-semibold text-foreground">{ticket.qty}</span>
-                            <button onClick={() => updateQty(ticket.id, 1)} className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors">
+                            <button
+                              onClick={() => updateQty(ticket.id, 1)}
+                              className="w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
+                            >
                               <Plus className="w-3 h-3" />
                             </button>
                           </div>
@@ -194,26 +183,59 @@ const Checkout = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <Label className="text-foreground text-sm">{isAr ? "الاسم الأول" : "First Name"}</Label>
-                    <Input className={`mt-1.5 bg-background text-base ${errors.firstName ? "border-destructive" : ""}`} value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={isAr ? "محمد" : "Mohammed"} maxLength={50} />
+                    <Input
+                      className={`mt-1.5 bg-background text-base ${errors.firstName ? "border-destructive" : ""}`}
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder={isAr ? "محمد" : "Mohammed"}
+                      maxLength={50}
+                    />
                     {errors.firstName && <p className="text-destructive text-xs mt-1">{errors.firstName}</p>}
                   </div>
                   <div>
                     <Label className="text-foreground text-sm">{isAr ? "اسم العائلة" : "Last Name"}</Label>
-                    <Input className={`mt-1.5 bg-background text-base ${errors.lastName ? "border-destructive" : ""}`} value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={isAr ? "العبدالله" : "Al-Abdullah"} maxLength={50} />
+                    <Input
+                      className={`mt-1.5 bg-background text-base ${errors.lastName ? "border-destructive" : ""}`}
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder={isAr ? "العبدالله" : "Al-Abdullah"}
+                      maxLength={50}
+                    />
                     {errors.lastName && <p className="text-destructive text-xs mt-1">{errors.lastName}</p>}
                   </div>
                 </div>
                 <div className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
                   <div>
                     <Label className="text-foreground text-sm">{isAr ? "البريد الإلكتروني" : "Email"}</Label>
-                    <Input className={`mt-1.5 bg-background text-base ${errors.email ? "border-destructive" : ""}`} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" dir="ltr" maxLength={255} />
+                    <Input
+                      className={`mt-1.5 bg-background text-base ${errors.email ? "border-destructive" : ""}`}
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="email@example.com"
+                      dir="ltr"
+                      maxLength={255}
+                    />
                     {errors.email && <p className="text-destructive text-xs mt-1">{errors.email}</p>}
                   </div>
                   <div>
                     <Label className="text-foreground text-sm">{isAr ? "رقم الجوال" : "Phone"}</Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm select-none pointer-events-none" dir="ltr">00966</span>
-                      <Input className={`mt-1.5 bg-background text-base pl-[52px] ${errors.phone ? "border-destructive" : ""}`} value={phone} onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, "").slice(0, 9); setPhone(v); }} placeholder="5XXXXXXXX" dir="ltr" maxLength={9} inputMode="numeric" />
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm select-none pointer-events-none" dir="ltr">
+                        00966
+                      </span>
+                      <Input
+                        className={`mt-1.5 bg-background text-base pl-[52px] ${errors.phone ? "border-destructive" : ""}`}
+                        value={phone}
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/[^0-9]/g, "").slice(0, 9);
+                          setPhone(v);
+                        }}
+                        placeholder="5XXXXXXXX"
+                        dir="ltr"
+                        maxLength={9}
+                        inputMode="numeric"
+                      />
                     </div>
                     {errors.phone && <p className="text-destructive text-xs mt-1">{errors.phone}</p>}
                   </div>
@@ -228,7 +250,6 @@ const Checkout = () => {
                   {isAr ? "ملخص الطلب" : "Order Summary"}
                 </h2>
 
-                {/* Restaurant & Table Info */}
                 {bookingState && (bookingState.restaurant || bookingState.table) && (
                   <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 mb-4 space-y-2">
                     {bookingState.restaurant && (
@@ -245,7 +266,7 @@ const Checkout = () => {
                         </span>
                         <span className="text-muted-foreground text-xs">
                           • {bookingState.table.seats} {isAr ? "مقاعد" : "seats"} • {
-                            bookingState.table.zone === "indoor" ? (isAr ? "داخلي" : "Indoor") :
+                            bookingState.table.zone === "indoor"  ? (isAr ? "داخلي"  : "Indoor")  :
                             bookingState.table.zone === "outdoor" ? (isAr ? "خارجي" : "Outdoor") : "VIP"
                           }
                         </span>
@@ -283,8 +304,7 @@ const Checkout = () => {
                   <span>{total} {isAr ? "ر.س" : "SAR"}</span>
                 </div>
 
-
-
+                {/* ✅ الزر الصح - يمرر كل البيانات لـ CardPayment */}
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -296,7 +316,18 @@ const Checkout = () => {
                       });
                       return;
                     }
-                    navigate("/card-payment", { state: { tickets, firstName, lastName, email, phone, total, vat, subtotal } });
+                    navigate("/card-payment", {
+                      state: {
+                        tickets,
+                        firstName,
+                        lastName,
+                        email,
+                        phone,
+                        total,
+                        vat,
+                        subtotal,
+                      },
+                    });
                   }}
                   className="w-full mt-6 h-12 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
                 >
