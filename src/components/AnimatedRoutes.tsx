@@ -10,6 +10,7 @@ const Places = lazy(() => import("@/pages/Places"));
 const Experiences = lazy(() => import("@/pages/Experiences"));
 const PlanVisit = lazy(() => import("@/pages/PlanVisit"));
 const Articles = lazy(() => import("@/pages/Articles"));
+const ArticleDetail = lazy(() => import("@/pages/ArticleDetail"));
 const Restaurants = lazy(() => import("@/pages/Restaurants"));
 const RestaurantDetail = lazy(() => import("@/pages/RestaurantDetail"));
 const Tickets = lazy(() => import("@/pages/Tickets"));
