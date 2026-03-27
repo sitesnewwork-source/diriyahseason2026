@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, MessageSquare, UtensilsCrossed, Ticket, LogOut, Menu, X, Home, Bell, User, Settings, Users, CalendarCheck } from "lucide-react";
+import { MessageSquare, Ticket, LogOut, Menu, X, Home, User, Settings, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AdminLogin from "./AdminLogin";
 import { useRealtimeNotifications } from "@/hooks/use-realtime-notifications";
@@ -11,17 +11,13 @@ import PullToRefresh from "@/components/PullToRefresh";
 import AdminInstallPrompt from "@/components/admin/AdminInstallPrompt";
 
 const navItems = [
-  { label: "نظرة عامة", icon: LayoutDashboard, path: "/admin" },
   { label: "الزوار", icon: Users, path: "/admin/visitors" },
   { label: "رسائل التواصل", icon: MessageSquare, path: "/admin/messages" },
-  { label: "حجوزات المطاعم", icon: UtensilsCrossed, path: "/admin/bookings" },
-  { label: "حجوزات الفعاليات", icon: CalendarCheck, path: "/admin/event-bookings" },
   { label: "طلبات التذاكر", icon: Ticket, path: "/admin/orders" },
   { label: "الإعدادات", icon: Settings, path: "/admin/settings" },
 ];
 
-// Bottom nav shows first 5 items on mobile
-const bottomNavItems = navItems.slice(0, 5);
+const bottomNavItems = navItems.slice(0, 4);
 
 const AdminLayout = () => {
   const [session, setSession] = useState<any>(null);
@@ -32,12 +28,9 @@ const AdminLayout = () => {
   useRealtimeNotifications();
   const navigate = useNavigate();
 
-  // Swap manifest for admin PWA
   useEffect(() => {
     const originalManifest = document.querySelector('link[rel="manifest"]');
     const originalHref = originalManifest?.getAttribute("href") || "";
-    
-    // Set admin manifest
     if (originalManifest) {
       originalManifest.setAttribute("href", "/admin-manifest.json");
     } else {
@@ -46,26 +39,14 @@ const AdminLayout = () => {
       link.href = "/admin-manifest.json";
       document.head.appendChild(link);
     }
-
-    // Set admin theme color
     let themeTag = document.querySelector('meta[name="theme-color"]');
     const originalTheme = themeTag?.getAttribute("content") || "";
-    if (themeTag) {
-      themeTag.setAttribute("content", "#3B82F6");
-    }
-
-    // Update page title
+    if (themeTag) themeTag.setAttribute("content", "#3B82F6");
     const originalTitle = document.title;
     document.title = "لوحة التحكم - الدرعية";
-
     return () => {
-      // Restore original on unmount
-      if (originalManifest && originalHref) {
-        originalManifest.setAttribute("href", originalHref);
-      }
-      if (themeTag && originalTheme) {
-        themeTag.setAttribute("content", originalTheme);
-      }
+      if (originalManifest && originalHref) originalManifest.setAttribute("href", originalHref);
+      if (themeTag && originalTheme) themeTag.setAttribute("content", originalTheme);
       document.title = originalTitle;
     };
   }, []);
@@ -75,12 +56,10 @@ const AdminLayout = () => {
       setSession(session);
       setLoading(false);
     });
-
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
@@ -96,7 +75,6 @@ const AdminLayout = () => {
     return () => { supabase.removeChannel(ch); };
   }, []);
 
-  // Live visitor stats
   const [onlineCount, setOnlineCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -135,20 +113,17 @@ const AdminLayout = () => {
     );
   }
 
-  if (!session) {
-    return <AdminLogin onLogin={() => {}} />;
-  }
+  if (!session) return <AdminLogin onLogin={() => {}} />;
 
   const currentPage = navItems.find(i => i.path === location.pathname);
 
   return (
     <div className="min-h-screen bg-[#f0f4f8] flex" dir="rtl">
-      {/* Sidebar - Desktop only */}
+      {/* Sidebar */}
       <aside className={cn(
         "fixed inset-y-0 right-0 z-50 w-[260px] bg-white border-l border-slate-200 shadow-lg transform transition-transform duration-300 lg:relative lg:translate-x-0 flex flex-col",
         sidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"
       )}>
-        {/* Brand */}
         <div className="p-5 border-b border-slate-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -166,7 +141,6 @@ const AdminLayout = () => {
           </div>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
           {navItems.map((item) => {
             const active = location.pathname === item.path;
@@ -177,9 +151,7 @@ const AdminLayout = () => {
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
                   "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[13px] transition-all duration-200",
-                  active
-                    ? "bg-blue-50 text-blue-600 font-semibold shadow-sm"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+                  active ? "bg-blue-50 text-blue-600 font-semibold shadow-sm" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
                 )}
               >
                 <item.icon className={cn("w-[18px] h-[18px]", active ? "text-blue-500" : "")} />
@@ -194,7 +166,6 @@ const AdminLayout = () => {
           })}
         </nav>
 
-        {/* Bottom */}
         <div className="p-3 border-t border-slate-100 space-y-0.5">
           <Link
             to="/"
@@ -213,23 +184,17 @@ const AdminLayout = () => {
         </div>
       </aside>
 
-      {/* Overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Main */}
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Top Bar */}
         <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 h-[56px] flex items-center px-3 sm:px-4 gap-2 sm:gap-3 shadow-sm">
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-slate-500 hover:text-slate-700">
             <Menu className="w-5 h-5" />
           </button>
-
           <h1 className="text-[14px] sm:text-[15px] font-semibold text-slate-800 truncate">{currentPage?.label || "لوحة التحكم"}</h1>
-
           <div className="mr-auto flex items-center gap-1.5 sm:gap-2">
-            {/* Visitor Stats */}
             <div className="flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[11px] font-semibold">{onlineCount}</span>
@@ -239,8 +204,6 @@ const AdminLayout = () => {
               <span className="text-[11px] font-semibold">{totalCount}</span>
               <span className="text-[10px] hidden sm:inline">إجمالي</span>
             </div>
-
-            {/* User Avatar */}
             <div className="flex items-center gap-1.5 sm:gap-2 px-1.5 sm:px-2 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors cursor-default">
               <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
                 <User className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
@@ -251,7 +214,6 @@ const AdminLayout = () => {
         </header>
 
         <PullToRefresh onRefresh={async () => {
-          // Dispatch a custom event that child pages listen to for refreshing data
           window.dispatchEvent(new CustomEvent("admin-pull-refresh"));
           await new Promise(r => setTimeout(r, 600));
         }}>
@@ -283,9 +245,7 @@ const AdminLayout = () => {
                 to={item.path}
                 className={cn(
                   "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all duration-200 min-w-[56px]",
-                  active
-                    ? "text-blue-600"
-                    : "text-slate-400 active:text-slate-600"
+                  active ? "text-blue-600" : "text-slate-400 active:text-slate-600"
                 )}
               >
                 <div className={cn(
@@ -299,42 +259,15 @@ const AdminLayout = () => {
                     </span>
                   )}
                 </div>
-                <span className={cn(
-                  "text-[10px] leading-none",
-                  active ? "font-semibold" : "font-medium"
-                )}>
+                <span className={cn("text-[10px] leading-none", active ? "font-semibold" : "font-medium")}>
                   {item.label.split(" ")[0]}
                 </span>
               </Link>
             );
           })}
-          {/* More/Settings */}
-          <Link
-            to="/admin/settings"
-            className={cn(
-              "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all duration-200 min-w-[56px]",
-              location.pathname === "/admin/settings"
-                ? "text-blue-600"
-                : "text-slate-400 active:text-slate-600"
-            )}
-          >
-            <div className={cn(
-              "w-8 h-8 rounded-xl flex items-center justify-center transition-all",
-              location.pathname === "/admin/settings" ? "bg-blue-50 shadow-sm" : ""
-            )}>
-              <Settings className={cn("w-[18px] h-[18px]", location.pathname === "/admin/settings" ? "text-blue-500" : "")} />
-            </div>
-            <span className={cn(
-              "text-[10px] leading-none",
-              location.pathname === "/admin/settings" ? "font-semibold" : "font-medium"
-            )}>
-              الإعدادات
-            </span>
-          </Link>
         </div>
       </nav>
 
-      {/* Notification Panel */}
       <NotificationPanel />
     </div>
   );
