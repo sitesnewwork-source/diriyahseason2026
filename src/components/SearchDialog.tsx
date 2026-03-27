@@ -1,19 +1,20 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, MapPin, Utensils, Compass, Ticket, CalendarDays, Clock, Trash2 } from "lucide-react";
+import { Search, X, MapPin, Utensils, Compass, Ticket, CalendarDays, Clock, Trash2, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { actionNotify } from "@/hooks/use-action-notify";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { places } from "@/data/places";
 import { experiences } from "@/data/experiences";
 import { restaurants } from "@/data/restaurants";
+import { articles } from "@/data/articles";
 
 interface SearchDialogProps {
   open: boolean;
   onClose: () => void;
 }
 
-type ResultType = "place" | "experience" | "restaurant" | "ticket" | "event";
+type ResultType = "place" | "experience" | "restaurant" | "ticket" | "event" | "article";
 
 interface SearchResult {
   id: string;
@@ -31,6 +32,7 @@ const typeConfig: Record<ResultType, { label: string; labelEn: string; icon: typ
   restaurant: { label: "مطعم", labelEn: "Restaurant", icon: Utensils, color: "bg-amber-500/20 text-amber-400" },
   ticket: { label: "تذكرة", labelEn: "Ticket", icon: Ticket, color: "bg-violet-500/20 text-violet-400" },
   event: { label: "فعالية", labelEn: "Event", icon: CalendarDays, color: "bg-rose-500/20 text-rose-400" },
+  article: { label: "مقال", labelEn: "Article", icon: FileText, color: "bg-teal-500/20 text-teal-400" },
 };
 
 const ticketItems: SearchResult[] = [
@@ -140,6 +142,10 @@ const SearchDialog = ({ open, onClose }: SearchDialogProps) => {
     })),
     ...ticketItems,
     ...eventItems,
+    ...articles.map((a) => ({
+      id: a.id, title: a.title, titleEn: a.titleEn, subtitle: a.excerpt.slice(0, 60) + "…",
+      type: "article" as const, image: a.image, link: `/article/${a.id}`,
+    })),
   ], []);
 
   const results = useMemo(() => {
@@ -182,6 +188,7 @@ const SearchDialog = ({ open, onClose }: SearchDialogProps) => {
     { key: "restaurant", label: "مطاعم", labelEn: "Restaurants" },
     { key: "ticket", label: "تذاكر", labelEn: "Tickets" },
     { key: "event", label: "فعاليات", labelEn: "Events" },
+    { key: "article", label: "مقالات", labelEn: "Articles" },
   ];
 
   return (
