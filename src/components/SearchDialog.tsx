@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, MapPin, Utensils, Compass, Ticket, CalendarDays } from "lucide-react";
+import { Search, X, MapPin, Utensils, Compass, Ticket, CalendarDays, Clock, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { actionNotify } from "@/hooks/use-action-notify";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -84,11 +84,36 @@ const eventItems: SearchResult[] = [
   },
 ];
 
+const RECENT_KEY = "diriyah_recent_searches";
+const MAX_RECENT = 5;
+
+const getRecentSearches = (): string[] => {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
+  } catch { return []; }
+};
+
+const saveRecentSearch = (term: string) => {
+  const trimmed = term.trim();
+  if (!trimmed) return;
+  const recent = getRecentSearches().filter((s) => s !== trimmed);
+  recent.unshift(trimmed);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(recent.slice(0, MAX_RECENT)));
+};
+
+const clearRecentSearches = () => localStorage.removeItem(RECENT_KEY);
+
 const SearchDialog = ({ open, onClose }: SearchDialogProps) => {
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<ResultType | "all">("all");
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const navigate = useNavigate();
   const { isRtl } = useLanguage();
+
+  // Load recent searches when dialog opens
+  useEffect(() => {
+    if (open) setRecentSearches(getRecentSearches());
+  }, [open]);
 
   // ESC to close
   useEffect(() => {
@@ -133,11 +158,21 @@ const SearchDialog = ({ open, onClose }: SearchDialogProps) => {
   }, [query, allItems, activeFilter]);
 
   const handleSelect = (result: SearchResult) => {
+    saveRecentSearch(query.trim() || result.title);
     actionNotify({ message: result.title, icon: "🔍", sound: "soft" });
     navigate(result.link);
     setQuery("");
     setActiveFilter("all");
     onClose();
+  };
+
+  const handleRecentClick = (term: string) => {
+    setQuery(term);
+  };
+
+  const handleClearRecent = () => {
+    clearRecentSearches();
+    setRecentSearches([]);
   };
 
   const filters: { key: ResultType | "all"; label: string; labelEn: string }[] = [
@@ -210,9 +245,39 @@ const SearchDialog = ({ open, onClose }: SearchDialogProps) => {
                 </div>
               )}
 
-              {!query.trim() && activeFilter === "all" && (
+              {!query.trim() && activeFilter === "all" && recentSearches.length === 0 && (
                 <div className="py-8 text-center text-muted-foreground/60 text-xs">
                   {isRtl ? "اكتب للبحث أو اختر فئة" : "Type to search or select a category"}
+                </div>
+              )}
+
+              {/* Recent Searches */}
+              {!query.trim() && activeFilter === "all" && recentSearches.length > 0 && (
+                <div className="px-5 py-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <button
+                      onClick={handleClearRecent}
+                      className="flex items-center gap-1 text-[10px] text-muted-foreground/50 hover:text-destructive transition-colors"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      {isRtl ? "مسح" : "Clear"}
+                    </button>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Clock className="w-3.5 h-3.5" />
+                      {isRtl ? "عمليات البحث الأخيرة" : "Recent Searches"}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2 justify-end">
+                    {recentSearches.map((term) => (
+                      <button
+                        key={term}
+                        onClick={() => handleRecentClick(term)}
+                        className="text-xs px-3 py-1.5 rounded-full bg-muted/70 text-muted-foreground hover:bg-primary/10 hover:text-primary border border-border/50 transition-all"
+                      >
+                        {term}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
 
