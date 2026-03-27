@@ -54,6 +54,7 @@ const AnimatedRoutes = forwardRef<HTMLDivElement>((_, ref) => {
           <Route path="/experiences" element={<PageTransition><Experiences /></PageTransition>} />
           <Route path="/plan" element={<PageTransition><PlanVisit /></PageTransition>} />
           <Route path="/articles" element={<PageTransition><Articles /></PageTransition>} />
+          <Route path="/article/:id" element={<PageTransition><ArticleDetail /></PageTransition>} />
           <Route path="/restaurants" element={<PageTransition><Restaurants /></PageTransition>} />
           <Route path="/restaurant/:id" element={<PageTransition><RestaurantDetail /></PageTransition>} />
           <Route path="/tickets" element={<PageTransition><Tickets /></PageTransition>} />
