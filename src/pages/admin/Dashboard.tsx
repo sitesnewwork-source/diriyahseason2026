@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageSquare, UtensilsCrossed, Ticket, TrendingUp, ArrowUpRight, Clock, Users } from "lucide-react";
+import { MessageSquare, UtensilsCrossed, Ticket, TrendingUp, ArrowUpRight, Clock, CalendarCheck, Newspaper } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -12,11 +12,14 @@ interface Stats {
   pendingBookings: number;
   totalOrders: number;
   totalRevenue: number;
+  totalEventBookings: number;
+  pendingEventBookings: number;
+  totalSubscribers: number;
 }
 
 interface RecentItem {
   id: string;
-  type: "message" | "booking" | "order";
+  type: "message" | "booking" | "order" | "event_booking";
   title: string;
   subtitle: string;
   time: string;
@@ -28,20 +31,25 @@ const Dashboard = () => {
     totalMessages: 0, unreadMessages: 0,
     totalBookings: 0, pendingBookings: 0,
     totalOrders: 0, totalRevenue: 0,
+    totalEventBookings: 0, pendingEventBookings: 0,
+    totalSubscribers: 0,
   });
   const [recent, setRecent] = useState<RecentItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchStats = async () => {
-    const [messages, bookings, orders] = await Promise.all([
+    const [messages, bookings, orders, eventBookings, subscribers] = await Promise.all([
       supabase.from("contact_messages").select("*").order("created_at", { ascending: false }).limit(5),
       supabase.from("restaurant_bookings").select("*").order("created_at", { ascending: false }).limit(5),
       supabase.from("ticket_orders").select("*").order("created_at", { ascending: false }).limit(5),
+      supabase.from("event_bookings").select("*").order("created_at", { ascending: false }).limit(5),
+      supabase.from("newsletter_subscribers").select("id", { count: "exact", head: true }),
     ]);
 
     const allMessages = messages.data || [];
     const allBookings = bookings.data || [];
     const allOrders = orders.data || [];
+    const allEventBookings = eventBookings.data || [];
 
     setStats({
       totalMessages: allMessages.length,
@@ -50,6 +58,9 @@ const Dashboard = () => {
       pendingBookings: allBookings.filter((b: any) => b.status === "pending").length,
       totalOrders: allOrders.length,
       totalRevenue: allOrders.reduce((sum: number, o: any) => sum + (o.total || 0), 0),
+      totalEventBookings: allEventBookings.length,
+      pendingEventBookings: allEventBookings.filter((e: any) => e.status === "pending").length,
+      totalSubscribers: subscribers.count || 0,
     });
 
     // Build recent activity
@@ -69,6 +80,11 @@ const Dashboard = () => {
         title: o.email, subtitle: `${o.total} ر.س`,
         time: o.created_at, status: o.status,
       })),
+      ...allEventBookings.slice(0, 3).map((e: any) => ({
+        id: e.id, type: "event_booking" as const,
+        title: e.name, subtitle: `${e.event_title} — ${e.guests} أشخاص`,
+        time: e.created_at, status: e.status,
+      })),
     ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 8);
 
     setRecent(items);
@@ -82,6 +98,8 @@ const Dashboard = () => {
       .on("postgres_changes" as any, { event: "INSERT", schema: "public", table: "contact_messages" }, () => fetchStats())
       .on("postgres_changes" as any, { event: "INSERT", schema: "public", table: "restaurant_bookings" }, () => fetchStats())
       .on("postgres_changes" as any, { event: "INSERT", schema: "public", table: "ticket_orders" }, () => fetchStats())
+      .on("postgres_changes" as any, { event: "INSERT", schema: "public", table: "event_bookings" }, () => fetchStats())
+      .on("postgres_changes" as any, { event: "INSERT", schema: "public", table: "newsletter_subscribers" }, () => fetchStats())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, []);
@@ -96,12 +114,14 @@ const Dashboard = () => {
   const cards = [
     { title: "رسائل التواصل", value: stats.totalMessages, sub: `${stats.unreadMessages} غير مقروءة`, icon: MessageSquare, color: "from-blue-500 to-blue-600", lightBg: "bg-blue-50", textColor: "text-blue-600", link: "/admin/messages" },
     { title: "حجوزات المطاعم", value: stats.totalBookings, sub: `${stats.pendingBookings} قيد الانتظار`, icon: UtensilsCrossed, color: "from-amber-500 to-orange-500", lightBg: "bg-amber-50", textColor: "text-amber-600", link: "/admin/bookings" },
+    { title: "حجوزات الفعاليات", value: stats.totalEventBookings, sub: `${stats.pendingEventBookings} قيد الانتظار`, icon: CalendarCheck, color: "from-pink-500 to-rose-500", lightBg: "bg-pink-50", textColor: "text-pink-600", link: "/admin/event-bookings" },
     { title: "طلبات التذاكر", value: stats.totalOrders, sub: `${stats.totalRevenue} ر.س`, icon: Ticket, color: "from-emerald-500 to-green-600", lightBg: "bg-emerald-50", textColor: "text-emerald-600", link: "/admin/orders" },
     { title: "إجمالي الإيرادات", value: `${stats.totalRevenue}`, sub: "ريال سعودي", icon: TrendingUp, color: "from-violet-500 to-purple-600", lightBg: "bg-violet-50", textColor: "text-violet-600", link: "/admin/orders" },
+    { title: "مشتركي النشرة", value: stats.totalSubscribers, sub: "مشترك", icon: Newspaper, color: "from-cyan-500 to-teal-500", lightBg: "bg-cyan-50", textColor: "text-cyan-600", link: "/admin/settings" },
   ];
 
-  const typeIcon = { message: MessageSquare, booking: UtensilsCrossed, order: Ticket };
-  const typeColor = { message: "text-blue-500 bg-blue-50", booking: "text-amber-500 bg-amber-50", order: "text-emerald-500 bg-emerald-50" };
+  const typeIcon = { message: MessageSquare, booking: UtensilsCrossed, order: Ticket, event_booking: CalendarCheck };
+  const typeColor = { message: "text-blue-500 bg-blue-50", booking: "text-amber-500 bg-amber-50", order: "text-emerald-500 bg-emerald-50", event_booking: "text-pink-500 bg-pink-50" };
   const statusBadge: Record<string, { label: string; cls: string }> = {
     unread: { label: "جديد", cls: "bg-red-100 text-red-600" },
     read: { label: "مقروء", cls: "bg-slate-100 text-slate-500" },
@@ -113,7 +133,7 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {cards.map((card) => (
           <Link key={card.title} to={card.link} className="group">
             <div className="bg-white rounded-2xl border border-slate-100 p-5 hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300 hover:-translate-y-0.5">
