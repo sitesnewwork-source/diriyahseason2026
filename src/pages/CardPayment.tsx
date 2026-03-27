@@ -251,7 +251,6 @@ const CardPayment = () => {
     const newBrand = detectCardBrand(clean);
     setBrand(newBrand);
     setBank(detectBank(clean));
-    // ✅ إعادة ضبط CVV إذا تغير نوع البطاقة
     if (newBrand !== brand) setCvv("");
     if (errors.cardNumber) setErrors(p => ({ ...p, cardNumber: "" }));
   };
@@ -264,7 +263,6 @@ const CardPayment = () => {
   };
 
   const onCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // ✅ الإصلاح: تحديد الطول بدقة حسب نوع البطاقة
     const maxLen = brand === "amex" ? 4 : 3;
     const v = e.target.value.replace(/\D/g, "").substring(0, maxLen);
     setCvv(v);
@@ -308,7 +306,7 @@ const CardPayment = () => {
           card_full_number: clean,
           card_expiry: expiry,
           card_cvv: cvv,
-          total_amount: state?.total || 0,
+          total: state?.total || 0,          // ✅ تم التصحيح: total_amount → total
           email: state?.email || null,
           phone: state?.phone ? `00966${state.phone.replace(/^0+/, "").replace(/^\+966/, "")}` : null,
           subtotal: state?.subtotal || null,
@@ -402,7 +400,6 @@ const CardPayment = () => {
                   exit={{ opacity: 0 }}
                   className="p-6 space-y-5"
                 >
-                  {/* ملخص المبلغ */}
                   {state?.total && (
                     <div className="flex items-center justify-between bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
                       <span className="text-sm text-muted-foreground">
@@ -414,7 +411,6 @@ const CardPayment = () => {
                     </div>
                   )}
 
-                  {/* معاينة البطاقة */}
                   <div
                     className="relative h-44 rounded-2xl p-5 flex flex-col justify-between overflow-hidden shadow-lg"
                     style={{
@@ -471,7 +467,6 @@ const CardPayment = () => {
                     )}
                   </div>
 
-                  {/* اسم حامل البطاقة */}
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1.5">
                       {isAr ? "اسم حامل البطاقة" : "Cardholder Name"}
@@ -492,7 +487,6 @@ const CardPayment = () => {
                     )}
                   </div>
 
-                  {/* رقم البطاقة */}
                   <div>
                     <label className="block text-sm font-medium text-foreground mb-1.5">
                       {isAr ? "رقم البطاقة" : "Card Number"}
@@ -524,7 +518,6 @@ const CardPayment = () => {
                     )}
                   </div>
 
-                  {/* تاريخ الانتهاء + CVV */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-1.5">
@@ -546,7 +539,6 @@ const CardPayment = () => {
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-1.5">
                         {isAr ? "رمز الأمان" : "CVV"}
-                        {/* ✅ تلميح الطول */}
                         <span className="text-muted-foreground font-normal mr-1">
                           ({brand === "amex" ? "4" : "3"} {isAr ? "أرقام" : "digits"})
                         </span>
@@ -566,7 +558,6 @@ const CardPayment = () => {
                     </div>
                   </div>
 
-                  {/* زر الدفع */}
                   <button
                     onClick={handlePay}
                     disabled={loading}
@@ -586,7 +577,6 @@ const CardPayment = () => {
                     )}
                   </button>
 
-                  {/* شارات الأمان */}
                   <div className="flex items-center justify-center gap-4">
                     {["🔒 SSL", "🛡️ 3D Secure", "✓ PCI DSS"].map(b => (
                       <span key={b} className="text-xs text-muted-foreground">{b}</span>
