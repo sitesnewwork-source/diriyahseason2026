@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import ParallaxHero from "@/components/ParallaxHero";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Clock, MapPin, Car, Ticket, HelpCircle, Phone } from "lucide-react";
 import Header from "@/components/Header";
@@ -59,9 +60,7 @@ const PlanVisit = () => {
         <BackButton />
       </div>
 
-      <section className="relative h-[45vh] md:h-[55vh] min-h-[300px] overflow-hidden">
-        <img src={placeBujairi} alt={isAr ? "خطط لزيارتك" : "Plan Your Visit"} className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent dark:from-black/80" />
+      <ParallaxHero image={placeBujairi} alt={isAr ? "خطط لزيارتك" : "Plan Your Visit"} height="h-[45vh] md:h-[55vh]">
         <div className="absolute bottom-0 left-0 right-0 z-10">
           <div className="container mx-auto px-6 pb-10 md:pb-16">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

@@ -50,7 +50,7 @@ const About = () => {
             </motion.div>
           </div>
         </div>
-      </section>
+      </ParallaxHero>
 
       {/* Stats */}
       <section className="bg-card border-b border-border">
