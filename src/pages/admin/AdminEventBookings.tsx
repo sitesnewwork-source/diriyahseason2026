@@ -63,11 +63,13 @@ const AdminEventBookings = () => {
 
   const updateStatus = async (id: string, status: string) => {
     await supabase.from("event_bookings").update({ status }).eq("id", id);
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
     toast({ title: "تم التحديث", description: `تم تغيير الحالة إلى ${statusLabels[status]}` });
   };
 
   const deleteBooking = async (id: string) => {
     await supabase.from("event_bookings").delete().eq("id", id);
+    setBookings(prev => prev.filter(b => b.id !== id));
     toast({ title: "تم الحذف" });
   };
 
