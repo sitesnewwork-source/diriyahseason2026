@@ -42,7 +42,7 @@ const AdminBookings = () => {
     fetchBookings();
     const channel = supabase
       .channel("bookings-realtime")
-      .on("postgres_changes" as any, { event: "INSERT", schema: "public", table: "restaurant_bookings" }, () => fetchBookings())
+      .on("postgres_changes" as any, { event: "*", schema: "public", table: "restaurant_bookings" }, () => fetchBookings())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, []);

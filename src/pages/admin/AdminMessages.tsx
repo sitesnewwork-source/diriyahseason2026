@@ -62,7 +62,7 @@ const AdminMessages = () => {
     fetchMessages();
     const channel = supabase
       .channel("messages-realtime")
-      .on("postgres_changes" as any, { event: "INSERT", schema: "public", table: "contact_messages" }, () => fetchMessages())
+      .on("postgres_changes" as any, { event: "*", schema: "public", table: "contact_messages" }, () => fetchMessages())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, []);

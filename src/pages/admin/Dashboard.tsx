@@ -38,12 +38,17 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchStats = async () => {
-    const [messages, bookings, orders, eventBookings, subscribers] = await Promise.all([
+    const [messages, bookings, orders, eventBookings, subscribers,
+           msgCount, bookCount, orderCount, eventCount] = await Promise.all([
       supabase.from("contact_messages").select("*").order("created_at", { ascending: false }).limit(5),
       supabase.from("restaurant_bookings").select("*").order("created_at", { ascending: false }).limit(5),
       supabase.from("ticket_orders").select("*").order("created_at", { ascending: false }).limit(5),
       supabase.from("event_bookings").select("*").order("created_at", { ascending: false }).limit(5),
       supabase.from("newsletter_subscribers").select("id", { count: "exact", head: true }),
+      supabase.from("contact_messages").select("id, is_read", { count: "exact" }),
+      supabase.from("restaurant_bookings").select("id, status", { count: "exact" }),
+      supabase.from("ticket_orders").select("id, total, status", { count: "exact" }),
+      supabase.from("event_bookings").select("id, status", { count: "exact" }),
     ]);
 
     const allMessages = messages.data || [];
@@ -51,15 +56,20 @@ const Dashboard = () => {
     const allOrders = orders.data || [];
     const allEventBookings = eventBookings.data || [];
 
+    const allMsgData = msgCount.data || [];
+    const allBookData = bookCount.data || [];
+    const allOrderData = orderCount.data || [];
+    const allEventData = eventCount.data || [];
+
     setStats({
-      totalMessages: allMessages.length,
-      unreadMessages: allMessages.filter((m: any) => !m.is_read).length,
-      totalBookings: allBookings.length,
-      pendingBookings: allBookings.filter((b: any) => b.status === "pending").length,
-      totalOrders: allOrders.length,
-      totalRevenue: allOrders.reduce((sum: number, o: any) => sum + (o.total || 0), 0),
-      totalEventBookings: allEventBookings.length,
-      pendingEventBookings: allEventBookings.filter((e: any) => e.status === "pending").length,
+      totalMessages: msgCount.count || allMsgData.length,
+      unreadMessages: allMsgData.filter((m: any) => !m.is_read).length,
+      totalBookings: bookCount.count || allBookData.length,
+      pendingBookings: allBookData.filter((b: any) => b.status === "pending").length,
+      totalOrders: orderCount.count || allOrderData.length,
+      totalRevenue: allOrderData.reduce((sum: number, o: any) => sum + (o.total || 0), 0),
+      totalEventBookings: eventCount.count || allEventData.length,
+      pendingEventBookings: allEventData.filter((e: any) => e.status === "pending").length,
       totalSubscribers: subscribers.count || 0,
     });
 
