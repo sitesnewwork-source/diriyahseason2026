@@ -8,6 +8,7 @@ import SEOHead from "@/components/SEOHead";
 import { experiences } from "@/data/experiences";
 import { useLanguage } from "@/i18n/LanguageContext";
 import BackButton from "@/components/BackButton";
+import ScrollReveal from "@/components/ScrollReveal";
 
 const categoriesAr = ["الكل", "التاريخ والثقافة", "الفنون", "التجارب"];
 const categoriesEn = ["All", "History & Culture", "Arts", "Experiences"];
@@ -82,7 +83,7 @@ const Experiences = () => {
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6"
             >
               {filtered.map((exp, i) => (
-                <motion.div key={exp.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
+                <ScrollReveal key={exp.id} animation={i % 3 === 0 ? "fade-up" : i % 3 === 1 ? "zoom" : "fade"} delay={i * 0.06}>
                   <Link to={`/experience/${exp.id}`} className="group block">
                     <div className="relative aspect-[4/5] rounded-lg overflow-hidden mb-3 dark:ring-1 dark:ring-border">
                       <img src={exp.image} alt={isAr ? exp.title : exp.titleEn} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -101,7 +102,7 @@ const Experiences = () => {
                       <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-gold" />{isAr ? exp.location : exp.locationEn}</span>
                     </div>
                   </Link>
-                </motion.div>
+                </ScrollReveal>
               ))}
             </motion.div>
           </AnimatePresence>

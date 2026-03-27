@@ -8,6 +8,7 @@ import SEOHead from "@/components/SEOHead";
 import BackButton from "@/components/BackButton";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { Button } from "@/components/ui/button";
+import ScrollReveal from "@/components/ScrollReveal";
 import EventBookingDialog from "@/components/EventBookingDialog";
 import eventCalligraphy from "@/assets/event-calligraphy-2.jpg";
 import eventKidsArt from "@/assets/event-kids-art.jpg";
@@ -123,7 +124,7 @@ const EventsPage = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {allEvents.map((event, i) => (
-              <motion.div key={event.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }} className="group cursor-pointer">
+              <ScrollReveal key={event.id} animation={i % 3 === 0 ? "fade-up" : i % 3 === 1 ? "fade-left" : "zoom"} delay={i * 0.07} className="group cursor-pointer">
                 <div className="relative aspect-[4/5] rounded-lg overflow-hidden mb-3 dark:ring-1 dark:ring-border">
                   <img src={event.image} alt={isAr ? event.title : event.titleEn} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent dark:from-black/50 pointer-events-none" />
@@ -157,7 +158,7 @@ const EventsPage = () => {
                 >
                   {isAr ? "احجز الآن" : "Book Now"}
                 </Button>
-              </motion.div>
+              </ScrollReveal>
             ))}
           </div>
         </div>

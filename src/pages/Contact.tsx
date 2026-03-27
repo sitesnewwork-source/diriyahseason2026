@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import { useLanguage } from "@/i18n/LanguageContext";
 import SEOHead from "@/components/SEOHead";
 import BackButton from "@/components/BackButton";
+import ScrollReveal from "@/components/ScrollReveal";
 import { cn } from "@/lib/utils";
 import { actionNotify } from "@/hooks/use-action-notify";
 
@@ -95,9 +96,8 @@ const ContactPage = () => {
 
           {/* Contact Form */}
           <div className={cn("lg:col-span-2", isRtl ? "order-2 lg:order-1" : "order-2 lg:order-1")}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+            <ScrollReveal animation="fade-up">
+            <div
               className="bg-card rounded-lg border border-border p-5 sm:p-8"
             >
               <div className="flex items-center gap-2 mb-5">
@@ -217,13 +217,12 @@ const ContactPage = () => {
                   </button>
                 </form>
               )}
-            </motion.div>
+            </div>
+            </ScrollReveal>
 
             {/* Map */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+            <ScrollReveal animation="fade-up" delay={0.1}>
+            <div
               className="bg-card rounded-lg border border-border p-5 sm:p-8 mt-6"
               id="map"
             >
@@ -241,15 +240,14 @@ const ContactPage = () => {
                   title={t("contact.ourLocation")}
                 />
               </div>
-            </motion.div>
+            </div>
+            </ScrollReveal>
           </div>
 
           {/* Sidebar */}
           <div className={cn("lg:col-span-1", isRtl ? "order-1 lg:order-2" : "order-1 lg:order-2")}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+            <ScrollReveal animation="fade-left" delay={0.15}>
+            <div
               className="bg-card rounded-lg border border-border p-5 sm:p-6 sticky top-28 space-y-5"
             >
               <h3 className="font-display text-lg font-bold text-foreground">{t("contact.contactInfo")}</h3>
@@ -300,7 +298,8 @@ const ContactPage = () => {
               >
                 {t("contact.bookTicket")}
               </Link>
-            </motion.div>
+            </div>
+            </ScrollReveal>
           </div>
         </div>
       </div>
